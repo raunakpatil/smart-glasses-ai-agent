@@ -141,7 +141,7 @@ Any Android TV or Google TV on the same Wi-Fi. No developer mode is needed: the 
 
 1. Find the TV's IP address (Settings → Network on the TV).
 2. In the app: **Devices → Smart TV Remote** → enter the IP → **Pair**. The TV shows a 6-character code; type it into the app.
-3. Try "TV pe lofi music chalao" or "PlayStation on karo".
+3. Try "Play lofi music on the TV" or "Turn on the PlayStation".
 
 ## 5. Optional: your Windows laptop
 

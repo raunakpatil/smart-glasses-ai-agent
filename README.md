@@ -2,27 +2,28 @@
 
 **Make your Ray-Ban Metas do what Meta AI can't.**
 
-An open-source, hands-free AI agent for Ray-Ban Meta smart glasses. Say "Ronie" and talk in Hindi, English or Hinglish. It sees what you see, plays things on your TV, opens them on your laptop, and answers live. It runs on free AI APIs, so there's no subscription.
+An open-source, hands-free AI agent for Ray-Ban Meta smart glasses. Say "Ronie" and just talk. It sees what you see, plays things on your TV, opens them on your laptop, and answers live. It runs on free AI APIs, so there's no subscription.
 
 > Not affiliated with, endorsed by, or sponsored by Meta Platforms or Ray-Ban (EssilorLuxottica). "Ray-Ban Meta" is used only to say which glasses this works with.
 
-<!-- Add a 20–30 second demo GIF here: say "Ronie, TV pe Stranger Things chalao" and show the TV playing it. -->
+<!-- Add a 20–30 second demo GIF here: say "Ronie, play Stranger Things on the TV" and show the TV playing it. -->
 
 ## What it does
 
 | Say | What happens |
 |---|---|
-| "Ronie, TV pe Stranger Things chalao" | Opens the show on your Android / Google TV and starts it |
-| "Laptop pe lofi music lagao" | Plays it on YouTube in your browser on the laptop |
+| "Ronie, play Stranger Things on the TV" | Opens the show on your Android / Google TV and starts it |
+| "Play some lofi on my laptop" | Plays it on YouTube in your browser on the laptop |
 | "Explain how black holes form" (at home) | Answers in your ear, and puts a video plus an article on the screen you're facing |
-| "Yeh kya hai?" / "What am I looking at?" | Takes a photo with the glasses and tells you |
-| "PlayStation on karo" | Wakes the PS5 and switches the TV to it |
-| "TV ki volume 15 kar do" | Sets that exact volume |
-| "Aaj ka mausam kaisa hai?" / "Latest F1 result?" | Searches the web and gives you the short answer |
-| "Yaad rakhna, locker number 42 hai" | Remembers it for later, across every session |
+| "What am I looking at?" | Takes a photo with the glasses and tells you |
+| "Turn on the PlayStation" | Wakes the PS5 and switches the TV to it |
+| "Set the TV volume to 15" | Sets that exact volume |
+| "What's the weather today?" / "Latest F1 result?" | Searches the web and gives you the short answer |
+| "Remember, my locker number is 42" | Remembers it for later, across every session |
 | "What's my best move?" (chess board in view) | Reads the board and suggests the move |
 | "Switch to interview mode" | Gives quiet answer points in your ear during a real interview |
-| "Stop" / "ruko" | Stops talking at once and listens |
+| Speak your own language | Understands several languages and accents: Hindi and English today, with more on the way |
+| "Stop" | Stops talking at once and listens |
 
 ### Compared with the built-in assistant
 

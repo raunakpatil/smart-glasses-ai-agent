@@ -9,7 +9,7 @@ An open-source, hands-free AI agent for Ray-Ban Meta smart glasses. Say "Ronie" 
 <p align="center">
   <a href="docs/media/launch-film.mp4"><img src="docs/media/preview.gif" alt="Launch film preview: the museum of old tech, Meet Ronie, Netflix on the TV, and Ronie calling a clinic" width="100%"></a>
 </p>
-<p align="center"><b><a href="docs/media/launch-film.mp4">▶ Watch the launch film (1:38, with sound)</a></b></p>
+<p align="center"><b><a href="docs/media/launch-film.mp4">▶ Watch the launch film (1:38, with voiceover and sound)</a></b></p>
 
 ## What it does
 

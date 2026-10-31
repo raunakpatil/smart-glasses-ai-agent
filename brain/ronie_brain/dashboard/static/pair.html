@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pair Ronie</title>
+<style>
+:root { --bg: #f4f6f8; --panel: #ffffff; --ink: #14202b; --muted: #5b6875; --line: #d8dfe6; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0e141a; --panel: #151d25; --ink: #e3e9ef; --muted: #96a4b1; --line: #27323d; color-scheme: dark; } }
+body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--ink); font: 15px/1.5 "Segoe UI", system-ui, sans-serif; padding: 16px; box-sizing: border-box; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 24px; max-width: 380px; text-align: center; }
+.qr { background: #ffffff; padding: 12px; border-radius: 8px; display: inline-block; }
+.qr svg { width: 260px; height: 260px; display: block; }
+h1 { font-size: 20px; margin: 0 0 6px; }
+p { color: var(--muted); margin: 8px 0; }
+code { font-family: Consolas, monospace; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Pair the Ronie app</h1>
+  <p>In the Ronie app, open Devices → Brain server → Scan QR code.</p>
+  <div class="qr">{{QR}}</div>
+  <p>Server address: <code>{{ADDRESS}}</code></p>
+  <p>No camera? Paste this pairing code in Devices instead:</p>
+  <p><code style="user-select: all; overflow-wrap: anywhere;">{{CODE}}</code></p>
+  <p>The phone and this laptop need to be on the same Wi-Fi. Allow Python through Windows Firewall if asked.</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,14 @@
+Asha Rao — Backend Software Engineer (made-up sample for testing)
+Bengaluru · 4 years experience · Python, Go, PostgreSQL, Kafka, AWS, Docker
+
+Experience
+PayKart (fintech), Backend Engineer, 2023–present
+- Led the payments API v2 launch serving 2M transactions/day; cut p95 latency from 420 ms to 250 ms (40%).
+- Disagreed with a senior teammate about retry logic; proposed a load test that showed retries doubled duplicate charges; we adopted idempotency keys and duplicate charges dropped to zero.
+- Mentored 2 junior engineers; one now owns the refunds service.
+ShopNest (e-commerce), Software Engineer, 2021–2023
+- Migrated order service from a monolith to 3 Go services with zero downtime.
+- Missed a deadline on a search revamp by 2 weeks after underestimating data cleanup; introduced weekly risk reviews afterwards and the next two projects shipped on time.
+
+Projects
+- Open-source Kafka consumer lag dashboard, 300 GitHub stars.

@@ -42,11 +42,23 @@ https://github.com/user-attachments/assets/90b6202b-6237-4d71-889a-12c43a5b61bb
 
 ## How it works
 
-<p align="center"><img src="docs/media/how-it-works.gif" alt="How it works: the glasses talk to the Android app over Bluetooth; the app streams voice to Gemini Live and talks to the brain server over WebSocket; the brain runs tools and a free model router and reaches the laptop agent; the phone controls the TV over home Wi-Fi." width="100%"></p>
+<p align="center"><img src="docs/media/how-it-works.gif" alt="How it works: the glasses talk to the Android app over Bluetooth; the app streams voice to the AI model and talks to the brain server over WebSocket; the brain runs tools and a model router (Gemini, Claude, ChatGPT, DeepSeek, Groq, OpenRouter, Ollama) and reaches the laptop agent; the phone controls the TV over home Wi-Fi." width="100%"></p>
 
 - **Android app** (Kotlin, Jetpack Compose): wake word, the voice session with Gemini Live, the glasses camera (Meta Wearables SDK), and the TV remote.
-- **Brain server** (Python, FastAPI): instructions, tools, shared memory, the free model router (Gemini, Groq, OpenRouter, optional Ollama), web research and pairing.
+- **Brain server** (Python, FastAPI): instructions, tools, shared memory, web research and pairing, plus a model router: free by default (Gemini, Groq, OpenRouter, local Ollama), with Claude, ChatGPT and DeepSeek when you add their keys. Real-time voice runs on Gemini Live.
 - **Laptop agent** (Windows): opens sites and apps, controls media and volume, lays out windows across displays, and hears call audio for interview mode.
+
+## The brain: it gets to know you
+
+<p align="center"><img src="docs/media/brain.gif" alt="The brain: what you say over days and months becomes key facts in memory and a growing profile of you (people, places, routines, preferences, health, work, interests), stored on your server and never shared." width="100%"></p>
+
+Ronie has a long-term memory that every model and every conversation shares, so it gets better the more you use it.
+
+- **It remembers what matters.** Say "remember…" and it saves it. It also picks up key details on its own as you talk: people, places, plans, preferences, the things you'd expect a friend to remember.
+- **Nothing gets lost.** Older conversations are folded into a running summary. Facts that change are updated, and facts that stop being true are dropped.
+- **A profile of you takes shape.** Over weeks and months it builds a picture of your life: the people you mention, your routines, your tastes, your work and interests. A year in, it knows you inside out.
+- **Every answer uses it.** Gemini, Claude, ChatGPT or any other model you switch to starts with the same memory, so you never have to repeat yourself.
+- **You stay in control.** See, edit or delete any memory from the app's Memory tab or the brain's mission control page.
 
 ## Get started
 
@@ -63,11 +75,20 @@ The full step-by-step guide is in **[docs/SETUP.md](docs/SETUP.md)**. In short:
 
 Everything runs on free tiers: Gemini, Groq and OpenRouter free models, plus Oracle Cloud's Always Free server if you want it online. Paid models (Claude, OpenAI, DeepSeek) are optional and only used if you add a key and turn on Premium.
 
-## Privacy
+## Security and privacy
 
-- Your memory, keys and settings stay on your own brain server, never in this repo.
-- API keys are stored on the server and never sent back to the app.
-- The "which screen are you facing" photo is taken only at home, from the glasses, is used once and isn't stored.
+<p align="center"><img src="docs/media/security.gif" alt="Security and privacy: voice leaves the phone encrypted over HTTPS; only paired devices with a private token get in and everyone else is turned away; memory, API keys, settings and the admin page stay locked on your own server; only the question goes to the AI provider you choose; or run the server on your own computer." width="100%"></p>
+
+There is no Ronie company in the middle. You run the brain yourself, so your data lives where you put it.
+
+- **Your own server.** The brain runs on a free Oracle Cloud machine in *your* account, or on your own computer at home if you'd rather skip the cloud entirely. Nobody else hosts or sees it.
+- **Encrypted in transit.** The phone and laptop talk to the brain over HTTPS (TLS), with a free certificate from Let's Encrypt.
+- **Only your devices get in.** Each device is paired once with a private token. Connections without it are refused.
+- **Your data stays home.** Memory, your profile, settings and API keys are stored on your server. Keys are kept in a file only your user can read, and they're never sent back to the app.
+- **The admin page isn't public.** Mission control is not exposed to the internet; you reach it through a private SSH tunnel.
+- **Only the question leaves.** To answer you, the brain sends the question (and the memory it needs) to the AI provider you chose, such as Google Gemini, using your own key and account. Their privacy terms apply to that request; nothing else goes anywhere.
+- **On-device where it can be.** The wake word "Hey Ronie" is detected on the phone. The "which screen are you facing" photo is taken only at home, used once and not stored.
+- **Open source.** Every line is in this repo for you to read, and nothing you store ever is: no analytics, no ads, no tracking.
 
 ## Project layout
 

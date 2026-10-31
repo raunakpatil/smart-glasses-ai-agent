@@ -555,10 +555,10 @@ fun HomeScreen(
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Things to try", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
                     PromptSuggestionItem(Icons.Outlined.Visibility, "\"What am I looking at?\"", "Takes a photo with your glasses")
-                    PromptSuggestionItem(Icons.Outlined.Tv, "\"TV pe Stranger Things chalao\"", "Plays it on your TV")
-                    PromptSuggestionItem(Icons.Outlined.Laptop, "\"Laptop pe lofi music lagao\"", "Plays it in Brave on your laptop")
-                    PromptSuggestionItem(Icons.Outlined.BatteryFull, "\"Glasses ki battery kitni hai?\"", "Glasses and phone battery")
-                    PromptSuggestionItem(Icons.Outlined.TravelExplore, "\"Aaj ka F1 result kya hai?\"", "Searches the web and sums it up")
+                    PromptSuggestionItem(Icons.Outlined.Tv, "\"Play Stranger Things on the TV\"", "Plays it on your TV")
+                    PromptSuggestionItem(Icons.Outlined.Laptop, "\"Play lofi music on my laptop\"", "Plays it in Brave on your laptop")
+                    PromptSuggestionItem(Icons.Outlined.BatteryFull, "\"How much battery do my glasses have?\"", "Glasses and phone battery")
+                    PromptSuggestionItem(Icons.Outlined.TravelExplore, "\"What was today's F1 result?\"", "Searches the web and sums it up")
                 }
             }
         } else {
@@ -1357,7 +1357,7 @@ fun MemoryScreen(brain: BrainClient) {
             if (state == BrainState.Connected) "Loading…" else "Memories show when the brain is online.",
             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        all.isEmpty() -> Text("Nothing saved yet. Say \"Ronie, yaad rakhna…\" or add something above.",
+        all.isEmpty() -> Text("Nothing saved yet. Say \"Ronie, remember…\" or add something above.",
             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         else -> {
             if (all.size > 5) OutlinedTextField(
@@ -1442,7 +1442,7 @@ fun VoiceStyleSection() {
                 Text("Clearer voice", style = MaterialTheme.typography.titleSmall)
                 Text(
                     if (clear) "Ronie sounds clearer, but you can't talk over it or say \"stop\"."
-                    else "Off: talk over Ronie or say \"stop\" / \"ruko\" and it stops and listens.",
+                    else "Off: talk over Ronie or say \"stop\" and it stops and listens.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -1511,7 +1511,7 @@ fun LaptopControlSection(brain: BrainClient) {
                 Text("Laptop", style = MaterialTheme.typography.titleMedium)
             }
             Text(
-                "Say \"laptop pe lofi music lagao\" or \"YouTube kholo\". Works while the Ronie agent runs on the laptop.",
+                "Say \"play lofi on my laptop\" or \"open YouTube\". Works while the Ronie agent runs on the laptop.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

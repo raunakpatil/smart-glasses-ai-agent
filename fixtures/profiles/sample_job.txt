@@ -1,0 +1,1 @@
+Senior Backend Engineer, payments platform. 5+ years. Go or Python. Distributed systems, Kafka, Kubernetes in production, on-call ownership, mentoring. Experience with PCI compliance is a plus.

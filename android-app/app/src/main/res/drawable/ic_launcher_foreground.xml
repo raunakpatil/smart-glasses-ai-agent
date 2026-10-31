@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ronie's logo: black Wayfarer glasses on a white circle (the white comes from the icon's background). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- left lens -->
+    <path
+        android:fillColor="#111111"
+        android:pathData="M25,44 L51.5,44 Q53.6,44 53.2,46.6 L51,58 Q50,63 45,63 L34,63 Q28,63 26.3,57.5 L23.4,47 Q22.8,44 25,44 Z" />
+    <!-- right lens -->
+    <path
+        android:fillColor="#111111"
+        android:pathData="M83,44 L56.5,44 Q54.4,44 54.8,46.6 L57,58 Q58,63 63,63 L74,63 Q80,63 81.7,57.5 L84.6,47 Q85.2,44 83,44 Z" />
+    <!-- bridge -->
+    <path
+        android:fillColor="#111111"
+        android:pathData="M52,45 L56,45 L56,50 Q54,48.6 52,50 Z" />
+    <!-- the Wayfarer's raised outer corners -->
+    <path
+        android:fillColor="#111111"
+        android:pathData="M21.5,42.5 L27,44 L24,48 Z M86.5,42.5 L81,44 L84,48 Z" />
+</vector>

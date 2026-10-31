@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ronie Build Plan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column with a sticky section index on wide screens; tables and diagrams scroll in their own boxes. */
+:root {
+  --bg: #f5f7f9;
+  --surface: #ffffff;
+  --ink: #15202b;
+  --muted: #566573;
+  --line: #d9e0e7;
+  --accent: #1d5fa8;
+  --accent-soft: #e3edf8;
+  --warn: #9a5a00;
+  --warn-soft: #fbf0df;
+  --drop: #9b2c2c;
+  --drop-soft: #f8e6e6;
+  --good: #2c6e49;
+  --good-soft: #e2f1e8;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f151b; --surface: #161e26; --ink: #e4eaf0; --muted: #9aa8b5; --line: #2a3541;
+    --accent: #7fb2ea; --accent-soft: #1b2c3f; --warn: #e3b061; --warn-soft: #33281a;
+    --drop: #ef9a9a; --drop-soft: #3a2222; --good: #8fd1a9; --good-soft: #1a3226; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f151b; --surface: #161e26; --ink: #e4eaf0; --muted: #9aa8b5; --line: #2a3541;
+  --accent: #7fb2ea; --accent-soft: #1b2c3f; --warn: #e3b061; --warn-soft: #33281a;
+  --drop: #ef9a9a; --drop-soft: #3a2222; --good: #8fd1a9; --good-soft: #1a3226; color-scheme: dark;
+}
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 80px;
+}
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 48px; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-size: 14px; max-height: calc(100vh - 48px); overflow-y: auto; }
+nav.toc p { font-family: var(--f-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+nav.toc a { display: block; color: var(--muted); text-decoration: none; padding: 3px 0; }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); }
+main { min-width: 0; max-width: 720px; }
+header.top { display: grid; gap: 12px; padding-bottom: 28px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-family: var(--f-display); font-size: clamp(32px, 5vw, 46px); line-height: 1.08; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+.lede { font-size: 18px; color: var(--muted); margin: 0; max-width: 62ch; }
+.specs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.chip { font-family: var(--f-mono); font-size: 12px; padding: 4px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+section { padding-top: 40px; }
+h2 { font-family: var(--f-display); font-size: 26px; line-height: 1.2; margin: 0 0 12px; text-wrap: balance; }
+h3 { font-size: 17px; font-weight: 600; margin: 24px 0 6px; }
+p { margin: 0 0 12px; max-width: 66ch; }
+ul { margin: 0 0 12px; padding-left: 20px; }
+li { margin: 4px 0; }
+code, .mono { font-family: var(--f-mono); font-size: .88em; }
+.scroll { overflow-x: auto; margin: 12px 0 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 560px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+th { font-family: var(--f-mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 500; background: var(--bg); }
+tr:last-child td { border-bottom: 0; }
+.src { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.tag { display: inline-block; font-family: var(--f-mono); font-size: 11px; padding: 1px 8px; border-radius: 4px; white-space: nowrap; }
+.tag.t1 { background: var(--accent-soft); color: var(--accent); }
+.tag.t2 { background: var(--good-soft); color: var(--good); }
+.tag.t3 { background: var(--warn-soft); color: var(--warn); }
+.tag.cut { background: var(--drop-soft); color: var(--drop); }
+pre.diagram { margin: 0; padding: 18px 20px; font-family: var(--f-mono); font-size: 13px; line-height: 1.55; color: var(--ink); white-space: pre; }
+.callout { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 16px 0; }
+.callout p:last-child { margin-bottom: 0; }
+.cut-list { display: grid; gap: 8px; margin: 12px 0; }
+.cut-list div { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: baseline; }
+.cue { font-family: var(--f-mono); font-size: 13.5px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; margin: 12px 0; }
+.cue .q { color: var(--muted); }
+.cue .a { color: var(--accent); }
+.screens { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 12px; margin: 12px 0 16px; }
+.screen { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+.screen h4 { margin: 0 0 6px; font-size: 15px; }
+.screen p { font-size: 14px; color: var(--muted); margin: 0; }
+.glance { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 12px; margin: 16px 0 0; }
+.glance div { border-top: 2px solid var(--accent); padding-top: 8px; }
+.glance strong { display: block; font-size: 14px; }
+.glance span { font-size: 14px; color: var(--muted); }
+ol.phases { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 0; border-left: 2px solid var(--line); }
+ol.phases li { position: relative; padding: 0 0 20px 22px; margin: 0; }
+ol.phases li::before { content: ""; position: absolute; left: -7px; top: 7px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); }
+.ph-head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.ph-head strong { font-size: 16px; }
+.ph-head .when { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+ol.phases p, ol.phases ul { margin-top: 4px; font-size: 15px; }
+footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+a { color: var(--accent); }
+@media (max-width: 860px) {
+  .wrap { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  nav.toc { display: none; }
+}
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="toc" aria-label="Sections">
+    <p>Contents</p>
+    <a href="#hardware">Hardware</a>
+    <a href="#sources">Sources and scope</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#app">Companion app</a>
+    <a href="#modes">Modes</a>
+    <a href="#assistant">Everyday assistant</a>
+    <a href="#language">Hindi + English</a>
+    <a href="#home">Smart home + TV</a>
+    <a href="#interview">Interview mode</a>
+    <a href="#coding">Coding copilot</a>
+    <a href="#games">Game mode</a>
+    <a href="#claude-code">Claude Code remote</a>
+    <a href="#future">Futuristic features</a>
+    <a href="#humor">Situational humor</a>
+    <a href="#battery">Battery</a>
+    <a href="#models">AI providers</a>
+    <a href="#free">Free services</a>
+    <a href="#stack">Stack and repo</a>
+    <a href="#team">Team split</a>
+    <a href="#phases">Build plan</a>
+    <a href="#quality">Quality targets</a>
+    <a href="#risks">Risks</a>
+  </nav>
+
+  <main>
+    <header class="top">
+      <p class="eyebrow">Build plan · v8</p>
+      <h1>Ronie, a hands-free AI assistant for Ray-Ban Meta Gen 2</h1>
+      <p class="lede">An Android app, a laptop brain server and a PC companion that together turn Ray-Ban Meta Gen 2 glasses into a bilingual assistant. It sees, listens, acts on your devices, coaches interviews, coding and games, and runs free by default.</p>
+      <div class="specs">
+        <span class="chip">Ray-Ban Meta Gen 2</span>
+        <span class="chip">Android · Kotlin</span>
+        <span class="chip">Python brain server</span>
+        <span class="chip">PC companion</span>
+        <span class="chip">Free by default · paid optional</span>
+        <span class="chip">Hindi · English · Hinglish</span>
+      </div>
+      <div class="glance">
+        <div><strong>Talk to it</strong><span>"Hey Ronie" or a tap, in Hindi, English or both mixed.</span></div>
+        <div><strong>Set it up</strong><span>Keys, modes, devices and privacy in the companion app.</span></div>
+        <div><strong>Hear the answer</strong><span>Short spoken replies in the ear; details on the phone or laptop.</span></div>
+        <div><strong>Pay only if you want</strong><span>Free AI by default; Claude, OpenAI or DeepSeek with your own key.</span></div>
+      </div>
+    </header>
+
+    <section id="hardware">
+      <h2>Hardware we're designing for</h2>
+      <p>Gen 2 has no display, so every response on the glasses is spoken. Anything visual goes to the phone or the laptop.</p>
+      <div class="scroll"><table>
+        <thead><tr><th>Glasses hardware</th><th>What it means for Ronie</th></tr></thead>
+        <tbody>
+          <tr><td>No display, open-ear speakers</td><td>Short spoken cues with a soft chime first. Keep volume low because people nearby can hear the speakers.</td></tr>
+          <tr><td>12 MP camera</td><td>Still photos on demand for reading text. The SDK video stream is lower resolution, so use it only for quick scene questions.</td></tr>
+          <tr><td>5-mic array</td><td>Good pickup for voice commands and for hearing the person you're talking to.</td></tr>
+          <tr><td>About 8 h battery</td><td>The camera and a constantly open mic drain it fastest. See the <a href="#battery">battery section</a>.</td></tr>
+          <tr><td>Meta Wearables DAT SDK (preview)</td><td>Camera access plus Bluetooth mic and speakers. Meta keeps the hardware buttons, so Ronie starts from a wake word, a phone tap, a Quick Settings tile or a watch tap.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="sources">
+      <h2>Sources and scope</h2>
+      <p>Ronie is a fresh codebase that uses three open repos as design references. Their licenses don't allow forking and merging (VisionClaw uses Meta sample terms, OpenGlasses is BSL 1.1, JARVIS has no license).</p>
+      <div class="scroll"><table>
+        <thead><tr><th>Repo</th><th>Ideas Ronie reuses</th></tr></thead>
+        <tbody>
+          <tr><td><strong>VisionClaw</strong></td><td>Low-latency Gemini Live voice and vision session, tool calls routed to OpenClaw, phone-camera test mode, frame throttling.</td></tr>
+          <tr><td><strong>OpenGlasses</strong></td><td>Any AI provider with routing, offline fallback, on-device memory, translation, wake words and personas, MCP and Home Assistant tools, taught routines, privacy controls.</td></tr>
+          <tr><td><strong>JARVIS</strong></td><td>Research agents running in parallel, results streamed as they arrive, every service optional so the app still works when one is missing.</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Not included</h3>
+      <div class="cut-list">
+        <div><span class="tag cut">cut</span><span>Live streaming: WebRTC view sharing, RTMP broadcasting, signaling and TURN servers.</span></div>
+        <div><span class="tag cut">cut</span><span>Display features: in-lens captions and cards (Gen 2 has no display).</span></div>
+        <div><span class="tag cut">cut</span><span>Identifying strangers by face and building profiles of them (JARVIS's PimEyes pipeline).</span></div>
+        <div><span class="tag cut">cut</span><span>Field Assist and clinical recording from OpenGlasses.</span></div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <h2>Architecture</h2>
+      <p>Realtime voice goes straight from the phone to Gemini Live, so speech has one network hop and the lowest delay. When Gemini calls a tool, the phone forwards it to the brain server on the laptop, which does the heavy work. The companion app is the control panel for all of it.</p>
+      <div class="scroll"><pre class="diagram">Ray-Ban Meta Gen 2  ── mic, speakers, camera (on demand)
+        │  Meta DAT SDK + Bluetooth
+        ▼
+Android app ─────────────── Gemini Live (realtime voice + vision, direct)
+  ├─ Companion UI     settings · keys · modes · devices · activity
+  ├─ Voice engine     wake word · voice activity detection · offline fallback
+  ├─ Vision           still photo / short frame burst · on-device OCR
+  ├─ Sound awareness  YAMNet alerts · spatial audio output
+  ├─ Memory           encrypted SQLite + vector index
+  ├─ Battery manager  power profiles · camera and mic budgets
+  └─ Tool forwarder   Gemini tool calls → brain server
+        │  paired, encrypted WebSocket (LAN, or Tailscale away from home)
+        ▼
+Brain server (Python · FastAPI, on the laptop)
+  ├─ Model router     free: Gemini · Groq · Ollama │ paid: Claude · OpenAI · DeepSeek
+  ├─ Interview engine knowledge base · practice · live cues
+  ├─ Coding copilot   planner · step tracker · error reader
+  ├─ Game engine      Stockfish · poker odds · rules engine
+  ├─ Home + TV        Home Assistant · Android TV Remote · Cast
+  ├─ Translator relay two-person live translation
+  ├─ Research agents  parallel, streamed
+  └─ Mission control  live dashboard of Ronie's reasoning
+        ▲
+        │  WebSocket (localhost)
+PC companion (Windows)
+  ├─ Screen capture + editor text (VS Code extension)
+  ├─ Transparent overlay for code chunks
+  └─ Coding-agent runner (Claude Code headless / Gemini CLI)</pre></div>
+      <h3>Connecting the pieces</h3>
+      <ul>
+        <li><strong>Pairing:</strong> the brain server shows a QR code; the companion app scans it once and gets the address and a pairing token. Every later connection is authenticated with that token.</li>
+        <li><strong>Discovery:</strong> the app finds the brain on the local network with mDNS, so no IP addresses to type.</li>
+        <li><strong>One settings source:</strong> the phone holds all settings and pushes changes to the brain the moment you save them.</li>
+        <li><strong>Graceful degradation:</strong> if the brain server is offline, the phone keeps voice, vision, memory and smart-home basics working on its own.</li>
+      </ul>
+    </section>
+
+    <section id="app">
+      <h2>Ronie companion app</h2>
+      <p>The Android app doubles as Ronie's control panel. Everything that needs setup or fine control happens here instead of by voice: API keys, modes, devices, privacy and history. Voice still works for quick changes ("Ronie, interview mode"), and both stay in sync.</p>
+      <div class="screens">
+        <div class="screen"><h4>Home</h4><p>Glasses, phone and brain connection status, battery for glasses and phone, current mode, today's AI spend, and one-tap mode switcher.</p></div>
+        <div class="screen"><h4>Modes</h4><p>Pick the active mode and set its options: job description for interviews, language and output device for coding, game and coach style for game mode.</p></div>
+        <div class="screen"><h4>AI and keys</h4><p>Add, test and remove keys for Gemini, Groq, Claude, OpenAI and DeepSeek. A "Test key" button checks each one. Premium switch, routing rules per task, monthly budget per provider.</p></div>
+        <div class="screen"><h4>Voice and language</h4><p>Auto, Hindi, English or Hinglish; Devanagari or Roman script; Ronie's voice and personality; wake word sensitivity; humor level Off / Rare / Normal.</p></div>
+        <div class="screen"><h4>Devices</h4><p>Glasses pairing, brain server pairing by QR, Home Assistant address and token, Android TV pairing by on-screen PIN, room tags for "look to control".</p></div>
+        <div class="screen"><h4>Knowledge base</h4><p>Import a resume, LinkedIn export, projects and job descriptions. Review and edit the STAR stories Ronie built, and see the gap check.</p></div>
+        <div class="screen"><h4>Claude Code</h4><p>Project folder allowlist, auto-approve edits per project, agent choice (Claude Code or Gemini CLI), and the task history with diffs.</p></div>
+        <div class="screen"><h4>Battery</h4><p>Power profile, estimated hours left for glasses and phone, and which features use the most power today.</p></div>
+        <div class="screen"><h4>Privacy</h4><p>Tool switches, memory on or off, delete memory, prompt viewer, network log, and which data each provider receives.</p></div>
+        <div class="screen"><h4>Activity</h4><p>Conversation history, interview reports, game reviews, Claude Code results, and the cost log per model.</p></div>
+      </div>
+      <h3>Quick controls outside the app</h3>
+      <ul>
+        <li><strong>Quick Settings tile:</strong> start or stop Ronie and switch modes from the notification shade.</li>
+        <li><strong>Home screen widget:</strong> current mode, battery and a talk button.</li>
+        <li><strong>Persistent notification:</strong> mute, change mode or end a session without opening the app.</li>
+        <li><strong>Wear OS tile</strong> (later): tap to talk from the watch.</li>
+      </ul>
+      <h3>Built with</h3>
+      <p>Jetpack Compose with Material 3, DataStore for settings, Android Keystore for API keys, CameraX for the QR scanner, and a foreground service that keeps the glasses session alive.</p>
+    </section>
+
+    <section id="modes">
+      <h2>Modes</h2>
+      <p>A mode changes what Ronie listens for, which model it uses and where answers go. Switch from the companion app, the Quick Settings tile, or by voice.</p>
+      <div class="scroll"><table>
+        <thead><tr><th>Mode</th><th>What Ronie does</th><th>Output</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Assistant</strong> (default)</td><td>Questions, vision, actions, memory, smart home and TV.</td><td>Ear; details on phone</td></tr>
+          <tr><td><strong>Interview</strong></td><td>Hears the interviewer, answers from your knowledge base, or runs practice rounds.</td><td>Keyword whisper; full card on phone</td></tr>
+          <tr><td><strong>Coding</strong></td><td>Reads the problem and your code, guides you step by step.</td><td>Talk track in ear; code on laptop overlay</td></tr>
+          <tr><td><strong>Game</strong></td><td>Reads the board or cards, suggests moves, teaches, referees.</td><td>Ear; board and odds on phone</td></tr>
+          <tr><td><strong>Translator</strong></td><td>Live two-way translation, including the two-person relay.</td><td>Ear; transcript on phone</td></tr>
+          <tr><td><strong>Focus</strong></td><td>Pomodoro, filtered notifications, no humor.</td><td>Ear</td></tr>
+          <tr><td><strong>Cooking</strong></td><td>Recipe steps, timers, "is it done?" checks.</td><td>Ear; recipe on phone</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="assistant">
+      <h2>Everyday assistant</h2>
+      <div class="scroll"><table>
+        <thead><tr><th>Feature</th><th>What it does</th><th>From</th></tr></thead>
+        <tbody>
+          <tr><td>Voice + vision</td><td>"Hey Ronie, what am I looking at?" takes a photo and answers aloud.</td><td class="src">VisionClaw</td></tr>
+          <tr><td>Any AI model</td><td>Free Gemini, Groq and local Ollama by default; Claude, OpenAI and DeepSeek with your own key. See <a href="#models">AI providers</a>.</td><td class="src">OpenGlasses</td></tr>
+          <tr><td>Offline fallback</td><td>On-device speech recognition, a local model and voice when there's no signal.</td><td class="src">OpenGlasses</td></tr>
+          <tr><td>Actions</td><td>MCP client, OpenClaw bridge, calendar, reminders, music, and routines you teach it by voice. Risky actions ask first.</td><td class="src">Both</td></tr>
+          <tr><td>Memory</td><td>Notes about places and people, replay of the last few minutes of speech, meeting notes.</td><td class="src">OpenGlasses</td></tr>
+          <tr><td>Research on demand</td><td>"Research this company" sends agents out in parallel and reads back a summary as results arrive.</td><td class="src">JARVIS</td></tr>
+          <tr><td>Privacy controls</td><td>Tool switches, prompt viewer and network log, all in the companion app.</td><td class="src">OpenGlasses</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="language">
+      <h2>Hindi and English</h2>
+      <p>Ronie understands and speaks Hindi, English and Hinglish (the two mixed in one sentence), and replies the way you spoke. Every mode works in all three.</p>
+      <div class="cue">
+        <div class="q">You: "Ronie, ye kya hai? Iska price batao."</div>
+        <div class="a">Ronie: "Ye ek Bluetooth speaker hai, JBL Flip 6. Online lagbhag ₹9,000 ka milta hai."</div>
+      </div>
+      <ul>
+        <li><strong>Language per turn:</strong> detected on every turn, so you can switch mid-conversation.</li>
+        <li><strong>Reply follows you:</strong> Hindi in → Hindi out, English in → English out, Hinglish in → Hinglish out. Technical words like "API" or "hashmap" stay in English inside Hindi sentences.</li>
+        <li><strong>Settings in the app:</strong> Auto (default), always Hindi, always English or always Hinglish; Devanagari or Roman script for phone text.</li>
+        <li><strong>Voice:</strong> a natural Hindi voice and an Indian English voice from the same engine, so mixed sentences don't switch speakers.</li>
+        <li><strong>Indian formats:</strong> lakh and crore, ₹, DD/MM dates, Indian phone numbers and addresses.</li>
+        <li><strong>Reading Hindi:</strong> Devanagari signs, menus and documents read aloud or translated.</li>
+        <li><strong>Wake words:</strong> "Hey Ronie" with any accent, plus "Ronie suno".</li>
+        <li><strong>In each mode:</strong> interview practice and cues in the interview's language; coding explanations in your language with code in English; game moves like "Ghoda f3 pe chalo".</li>
+      </ul>
+    </section>
+
+    <section id="home">
+      <h2>Smart home and Android TV</h2>
+      <p>Lights, fans, ACs, plugs and the TV by voice in Hindi or English, all on the local network with free, open-source tools. Devices are added in the companion app.</p>
+      <div class="cue">
+        <div class="q">You: "Ronie, TV pe YouTube kholo aur volume kam karo."</div>
+        <div class="a">Ronie: "YouTube khol diya, volume 15 pe hai."</div>
+      </div>
+      <h3>Smart home</h3>
+      <ul>
+        <li><strong>Hub:</strong> Home Assistant on the laptop or a Raspberry Pi, so Ronie talks to one API for thousands of device types.</li>
+        <li><strong>Devices:</strong> Wi-Fi bulbs and plugs (Wipro, Syska, Tuya / Smart Life with local control), Philips Hue, Matter, and IR for ACs and old TVs through a Broadlink blaster.</li>
+        <li><strong>Scenes:</strong> "Movie mode" dims the lights, turns on the TV and sets the AC to 24°. "Good night" turns everything off.</li>
+        <li><strong>Look to control:</strong> look at a lamp and say "turn this off"; Ronie matches the photo to the device tagged in that room.</li>
+        <li><strong>Status questions:</strong> "Did I leave the geyser on?" reads the state and offers to switch it off.</li>
+        <li><strong>Confirmation</strong> before door locks or anything that could spoil food or cause damage.</li>
+      </ul>
+      <h3>Android TV / Google TV</h3>
+      <ul>
+        <li><strong>Remote:</strong> power, volume, mute, d-pad, back, home and typing into search through the Android TV Remote protocol (<code>androidtvremote2</code>).</li>
+        <li><strong>Apps:</strong> "Open Netflix / YouTube / Hotstar / JioCinema" through deep links, with ADB over the network as a backup.</li>
+        <li><strong>Content:</strong> "Play lo-fi on YouTube" or "Play the India match" by casting with <code>pychromecast</code> or searching in the app.</li>
+        <li><strong>What's on screen:</strong> look at the TV and ask "who is this actor?".</li>
+        <li><strong>Auto pause:</strong> optional pause when you say "main aata hoon" or the doorbell is detected.</li>
+      </ul>
+    </section>
+
+    <section id="interview">
+      <h2>Interview mode</h2>
+      <p>Hears the interviewer's question through the glasses mic and answers from your own career data.</p>
+      <h3>1. Career knowledge base</h3>
+      <ul>
+        <li>Import a resume, LinkedIn export, project write-ups, GitHub READMEs and the job description in the companion app.</li>
+        <li>The AI builds a structured profile: skills, projects, numbers ("cut latency 40%") and STAR stories tagged by theme (conflict, failure, leadership, deadline). The profile is indexed ahead of time so live lookups are instant.</li>
+        <li>Gap check: compares the job description with the profile and lists the questions you're likely to be weak on.</li>
+      </ul>
+      <h3>2. Practice mode</h3>
+      <ul>
+        <li>Ronie plays the interviewer: behavioral, technical or HR rounds, tailored to the job description.</li>
+        <li>Scores each spoken answer on structure, length, filler words and use of numbers, then asks a follow-up.</li>
+      </ul>
+      <h3>3. Live answer cues</h3>
+      <ul>
+        <li>Transcribes the interviewer, sorts the question into a type, and searches the knowledge base.</li>
+        <li>Whispers 2–4 keywords and shows the full answer card on the phone.</li>
+        <li>Uses facts from your data only. When nothing matches, it says so instead of making something up.</li>
+      </ul>
+      <div class="cue">
+        <div class="q">Interviewer: "Tell me about a conflict with a teammate."</div>
+        <div class="a">Ear: "payments API … load test … minus 40 percent"</div>
+        <div class="a">Phone: Payments API launch · disagreed on retry logic · ran a load test to settle it · errors down 40% · now mentor that dev</div>
+      </div>
+      <h3>4. After the interview</h3>
+      <ul>
+        <li>Every question asked with your answer, what to improve, and a draft thank-you note, saved in Activity.</li>
+      </ul>
+    </section>
+
+    <section id="coding">
+      <h2>Coding copilot</h2>
+      <p>Guides you through a coding problem step by step. The PC companion reads the screen exactly; the glasses camera is the backup for paper and whiteboards.</p>
+      <div class="scroll"><pre class="diagram">Problem text + current code + spoken hints
+        ▼
+Analyzer      problem pattern · edge cases · best complexity
+        ▼
+Planner       solution split into small numbered steps
+        ▼
+Step tracker  compares the plan with the typed code, picks the next step
+        ▼
+Output        glasses: talk track, hints, bug alerts
+              laptop overlay: the next 1–3 lines of code
+              phone: full solution + complexity summary</pre></div>
+      <ul>
+        <li><strong>Talk track first:</strong> "Brute force is O(n²). A hashmap of complements gets it to O(n)."</li>
+        <li><strong>Code in chunks:</strong> 1–3 lines on the overlay, moving on as soon as the tracker sees them typed.</li>
+        <li><strong>Bug alerts:</strong> reads compiler and test errors from the screen ("line 12, off by one, use less-or-equal").</li>
+        <li><strong>Edge cases and complexity</strong> summary at the end.</li>
+        <li><strong>Follow-ups:</strong> "Can you optimize memory?" starts a new plan.</li>
+        <li><strong>Voice controls:</strong> "next", "repeat", "skip", "explain".</li>
+      </ul>
+    </section>
+
+    <section id="games">
+      <h2>Game mode</h2>
+      <p>Helps you play any board, card or video game. It looks at the game through a still photo or the laptop screen, works out the state, and suggests the next move with a short reason.</p>
+      <div class="scroll"><pre class="diagram">Photo or screenshot + your voice ("my hand is ace-king")
+        ▼
+Game detector   which game is this?
+        ▼
+State reader    board / cards / money → structured state
+        ▼
+Game engine     a specialist solver when one exists,
+                AI reasoning over the rules when not
+        ▼
+Output          ear: "Knight to f3, it defends e5"
+                phone: board diagram, odds, alternatives</pre></div>
+      <div class="scroll"><table>
+        <thead><tr><th>Game</th><th>How it reads the state</th><th>Engine</th><th>What it says</th></tr></thead>
+        <tbody>
+          <tr><td>Chess</td><td>Photo → piece detection → FEN string</td><td>Stockfish</td><td>"Bishop takes c6. You're up about a pawn."</td></tr>
+          <tr><td>Poker</td><td>Card detection + you say your hole cards</td><td><code>eval7</code> equity + pot odds</td><td>"About 38% to win, the call needs 25%, so call."</td></tr>
+          <tr><td>Monopoly</td><td>Photo of the board + voice updates for money</td><td>Rules engine + property value model</td><td>"Buy it. It completes the orange set."</td></tr>
+          <tr><td>Scrabble, Catan, Uno, card games</td><td>Photo + vision model</td><td>AI with the game's rules loaded</td><td>Best word / build / card with a reason.</td></tr>
+          <tr><td>Any other game</td><td>Vision model guesses; you can name it</td><td>AI + rules looked up on the web</td><td>Rules answers, a move, strategy tips.</td></tr>
+        </tbody>
+      </table></div>
+      <ul>
+        <li><strong>Coach</strong> suggests the best move and says why; <strong>Teach</strong> asks "what would you do?" first; <strong>Referee</strong> settles rules questions; <strong>Review</strong> goes through key moments afterwards.</li>
+      </ul>
+      <div class="callout"><p>Use game mode for casual games, games against bots and practice. Device help in casino poker is a crime in many places (Nevada, for example), and rated chess and online poker sites ban accounts for it.</p></div>
+    </section>
+
+    <section id="claude-code">
+      <h2>Claude Code remote</h2>
+      <p>Give coding tasks to Claude Code on the laptop by voice, approve its actions with a word or a nod, and hear what it did. The PC companion runs Claude Code in headless mode.</p>
+      <div class="cue">
+        <div class="q">You: "Ronie, tell Claude Code to fix the failing login test in the ronie repo."</div>
+        <div class="a">Ronie: "It wants to run the test suite. Allow?" → "Yes"</div>
+        <div class="a">Ronie: "Done. Fixed a token expiry check in auth.py, two lines changed, all 48 tests pass. Commit it?"</div>
+      </div>
+      <div class="scroll"><pre class="diagram">Voice task → brain server → PC companion
+        ▼
+claude -p "&lt;task&gt;" --output-format stream-json
+       --permission-prompt-tool  (approvals routed to Ronie)
+       --resume &lt;session&gt;         (follow-ups keep context)
+        ▼
+Progress → mission control (live)
+Approvals → spoken in the ear → "yes" / "no" / nod
+Result → short spoken summary + full diff in the companion app</pre></div>
+      <ul>
+        <li><strong>Start, check and follow up:</strong> "add a dark mode to mission control", "what's Claude doing?", "also add a test for that".</li>
+        <li><strong>Git by voice:</strong> "Commit it" and "Undo that change", always confirmed. Pushing needs a tap in the companion app.</li>
+        <li><strong>Safety:</strong> project allowlist set in the app; shell commands always ask; deleting files and force-pushing are blocked; access away from home only through Tailscale.</li>
+        <li><strong>Cost:</strong> Claude Code needs a Claude subscription. Without one, the same interface runs Gemini CLI on Google's free tier.</li>
+      </ul>
+    </section>
+
+    <section id="future">
+      <h2>Futuristic features</h2>
+      <p>All built on free tools. Tiers set the build order: <span class="tag t1">tier 1</span> first, then <span class="tag t2">tier 2</span>, then <span class="tag t3">tier 3</span>.</p>
+      <div class="scroll"><table>
+        <thead><tr><th>Feature</th><th>What it does</th><th>Free tools</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Mission control</strong> <span class="tag t1">tier 1</span></td><td>A live web dashboard of Ronie's reasoning: what it heard, the language, what it saw, which tool and model it picked, the answer and its cost. Also the main debugging tool.</td><td>FastAPI WebSocket, static page</td></tr>
+          <tr><td><strong>Look and do</strong> <span class="tag t1">tier 1</span></td><td>Poster → calendar event. Wi-Fi card → phone connects. Visiting card → contact saved. Medicine strip → dosage read and reminder set.</td><td>Gemini vision, ML Kit, Android intents</td></tr>
+          <tr><td><strong>Sound awareness</strong> <span class="tag t1">tier 1</span></td><td>Alerts for a car horn behind you, a doorbell, a pressure cooker whistle, or someone calling your name.</td><td>YAMNet on the phone</td></tr>
+          <tr><td><strong>Two-person translator</strong> <span class="tag t1">tier 1</span></td><td>Two people speak different languages and each hears the other in their own, in real time.</td><td>Gemini Live, WebSocket relay</td></tr>
+          <tr><td><strong>Offline mode</strong> <span class="tag t1">tier 1</span></td><td>No internet? Ronie keeps answering from the local model and on-device speech.</td><td>Ollama, Android speech</td></tr>
+          <tr><td><strong>Head-nod confirmation</strong> <span class="tag t2">tier 2</span></td><td>Nod for yes, shake for no when Ronie asks to confirm.</td><td>Glasses motion data if the SDK exposes it, otherwise motion between two quick camera frames</td></tr>
+          <tr><td><strong>Morning briefing</strong> <span class="tag t2">tier 2</span></td><td>When you put the glasses on: weather, calendar, commute and one headline, in your language.</td><td>Open-Meteo, Android calendar, RSS</td></tr>
+          <tr><td><strong>Find my stuff</strong> <span class="tag t2">tier 2</span></td><td>"Where are my keys?" checks recent photos for where Ronie last saw them.</td><td>Local photo index, Gemini vision</td></tr>
+          <tr><td><strong>Spatial audio cues</strong> <span class="tag t2">tier 2</span></td><td>Directions come from the matching side ("bus stop on your left" plays in the left ear).</td><td>Android audio panning</td></tr>
+          <tr><td><strong>Cooking mode</strong> <span class="tag t2">tier 2</span></td><td>Hands-free recipe steps, voice timers, and a look at the pan to say when it's done.</td><td>Gemini, Android timers</td></tr>
+          <tr><td><strong>PC agent</strong> <span class="tag t2">tier 2</span></td><td>"Open my project and run the tests" on the laptop, with results read back. Asks before anything destructive.</td><td>PC companion, command allowlist</td></tr>
+          <tr><td><strong>Focus mode</strong> <span class="tag t2">tier 2</span></td><td>Pomodoro in your ear; mutes notifications and reads only the important ones.</td><td>Android notification listener</td></tr>
+          <tr><td><strong>Nightly recap</strong> <span class="tag t3">tier 3</span></td><td>A 2-minute spoken summary of the day: notes, tasks done, reminders for tomorrow.</td><td>Memory store, Gemini</td></tr>
+          <tr><td><strong>Voice styles</strong> <span class="tag t3">tier 3</span></td><td>Calm, energetic, professional, or a "desi friend" Hinglish personality, picked in the app.</td><td>System prompts, Gemini Live voices</td></tr>
+          <tr><td><strong>Landmark navigation</strong> <span class="tag t3">tier 3</span></td><td>Walking directions using what you can see: "turn left after the red Domino's".</td><td>OpenStreetMap, OSRM, Gemini vision</td></tr>
+          <tr><td><strong>Learn anything</strong> <span class="tag t3">tier 3</span></td><td>Point at an object for a 30-second lesson; things you've seen become flashcards.</td><td>Gemini, local SQLite</td></tr>
+          <tr><td><strong>Street-smart India mode</strong> <span class="tag t3">tier 3</span></td><td>Fair auto-rickshaw fare estimate, menu dishes explained, price checks before bargaining.</td><td>OpenStreetMap + city fare tables, Gemini</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="humor">
+      <h2>Situational humor</h2>
+      <p>Ronie makes a joke only when the moment has a really good pun, never as a habit.</p>
+      <div class="cue">
+        <div class="q">You, walking past a bakery: "Kya time hua?"</div>
+        <div class="a">Ronie: "4:30. Perfect bread time, I mean break time."</div>
+      </div>
+      <ul>
+        <li><strong>Scored, not forced:</strong> with each answer, the AI also suggests one pun about the situation and rates it 1–10, in the same request. Ronie says it only at 9 or above.</li>
+        <li><strong>Answer first:</strong> the useful information always comes first; the pun is one short line after it.</li>
+        <li><strong>Cooldown:</strong> at most one joke every 30 minutes, and no repeats.</li>
+        <li><strong>Off in serious moments:</strong> never during interview cues, coding, sound or safety alerts, medicine reminders, translation, focus mode, bad news, or when you sound stressed.</li>
+        <li><strong>Language-aware:</strong> Hindi and Hinglish wordplay when you're speaking Hindi.</li>
+        <li><strong>Learns your taste:</strong> "good one" nudges the rate up, "no jokes" turns it off. Off / Rare (default) / Normal in the app.</li>
+        <li><strong>Kind only:</strong> about the situation, never about you or people nearby.</li>
+      </ul>
+    </section>
+
+    <section id="battery">
+      <h2>Battery</h2>
+      <p>The glasses camera, a mic that's always open over Bluetooth, and constant network use are the biggest drains. Ronie keeps each one off until it's needed and adapts to how much charge is left.</p>
+      <h3>Glasses</h3>
+      <ul>
+        <li><strong>Camera off by default:</strong> one still photo per question instead of a video stream. Short frame bursts (2–3 frames) only for "what's happening" questions.</li>
+        <li><strong>Lowest resolution that works:</strong> small frames for scene questions, full 12 MP only for reading text.</li>
+        <li><strong>Mic only when needed:</strong> the Bluetooth mic link opens during a session and closes after 60 seconds of silence. Interview, game and translator modes keep it open until you end them.</li>
+        <li><strong>Listening options in the app:</strong> Always listening (wake word, most power), Smart (wake word only while a mode is active, otherwise tap to talk), Tap to talk (least power).</li>
+        <li><strong>Auto disconnect</strong> when the glasses go in the case or nothing has happened for 10 minutes.</li>
+      </ul>
+      <h3>Phone</h3>
+      <ul>
+        <li><strong>Voice activity detection:</strong> audio goes to the AI only while someone is speaking, which saves radio power and free-tier quota.</li>
+        <li><strong>Close idle sessions:</strong> the Gemini Live connection closes after 2 minutes idle and reopens instantly on the next request.</li>
+        <li><strong>Heavy work on the laptop:</strong> embeddings, game engines, research and code analysis run on the brain server, not the phone.</li>
+        <li><strong>Duty-cycled sound awareness:</strong> YAMNet runs on short audio windows, and only when the feature is on.</li>
+        <li><strong>Background done right:</strong> one foreground service for the glasses session; sync and memory indexing through WorkManager while charging; follows Android Doze.</li>
+        <li><strong>Small responses:</strong> brief spoken answers by default, with details sent as text to the phone instead of long audio.</li>
+      </ul>
+      <h3>Power profiles</h3>
+      <div class="scroll"><table>
+        <thead><tr><th>Profile</th><th>When</th><th>What changes</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Full</strong></td><td>Charging, or above 50%</td><td>Everything on: wake word, camera bursts, sound awareness, proactive features.</td></tr>
+          <tr><td><strong>Balanced</strong> (default)</td><td>20–50%</td><td>Smart listening, still photos only, sound awareness on short windows, morning briefing kept.</td></tr>
+          <tr><td><strong>Saver</strong></td><td>Below 20%</td><td>Tap to talk, camera only when asked, sound awareness off, proactive features off, local model preferred for short answers.</td></tr>
+          <tr><td><strong>Critical</strong></td><td>Below 8%</td><td>Voice questions and safety alerts only; Ronie says it's in low-power mode once.</td></tr>
+        </tbody>
+      </table></div>
+      <ul>
+        <li>Profiles switch automatically from glasses and phone battery levels; you can pin one in the app.</li>
+        <li>The Battery screen shows hours left for each device and which features used the most power today, measured from Android's battery stats.</li>
+        <li>Ronie reminds you to put the glasses in the case when they're below 15% and you're at home.</li>
+      </ul>
+    </section>
+
+    <section id="models">
+      <h2>AI providers</h2>
+      <p>Ronie runs free by default. Add a key for Claude, OpenAI or DeepSeek in the companion app and the model router starts using it for the jobs it does best. Remove the key and Ronie goes back to free services.</p>
+      <div class="scroll"><table>
+        <thead><tr><th>Provider</th><th>Cost</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Gemini</strong></td><td>Free tier</td><td>Realtime voice and vision (Gemini Live), general reasoning, the default for everything</td></tr>
+          <tr><td><strong>Groq</strong></td><td>Free tier</td><td>Fast fallback for text and Whisper speech recognition</td></tr>
+          <tr><td><strong>Ollama</strong> (local)</td><td>Free</td><td>Offline answers and the last fallback</td></tr>
+          <tr><td><strong>Claude</strong></td><td>Paid, your key</td><td>Coding copilot, Claude Code tasks, interview answers, long documents. Sonnet 5.5 by default, Opus 5.5 for hard problems, Haiku 5.5 for quick replies.</td></tr>
+          <tr><td><strong>OpenAI</strong></td><td>Paid, your key</td><td>Realtime voice instead of Gemini Live, vision, general chat (their current GPT models and Realtime API)</td></tr>
+          <tr><td><strong>DeepSeek</strong></td><td>Paid, your key</td><td>Cheap step-by-step reasoning for games, puzzles and math (<code>deepseek-chat</code>, <code>deepseek-reasoner</code>)</td></tr>
+        </tbody>
+      </table></div>
+      <ul>
+        <li><strong>Routing rules</strong> are edited in the app per task: coding → Claude, games → DeepSeek, interview → Claude or OpenAI, realtime voice → Gemini Live or OpenAI Realtime, everything else → free.</li>
+        <li><strong>Premium switch</strong> in the app or the Quick Settings tile, per session or per mode.</li>
+        <li><strong>Budget cap</strong> per provider (for example ₹500 a month): a warning at 80%, automatic switch to free at 100%.</li>
+        <li><strong>Automatic fallback:</strong> rate limit or outage → next provider in the chain (paid → Gemini → Groq → Ollama), said once.</li>
+        <li><strong>One interface</strong> in <code>brain/</code>: OpenAI and DeepSeek share the OpenAI-compatible client; Claude uses the Anthropic SDK.</li>
+        <li><strong>Keys:</strong> entered in the app, stored in the Android Keystore, sent once to the paired brain server over the encrypted connection and kept in the laptop's OS keyring. Never in the repo.</li>
+      </ul>
+    </section>
+
+    <section id="free">
+      <h2>Free services for every job</h2>
+      <p>Every job has a free main choice. Free-tier limits change often, so check them before building on them.</p>
+      <div class="scroll"><table>
+        <thead><tr><th>Job</th><th>Main choice</th><th>Fallback</th></tr></thead>
+        <tbody>
+          <tr><td>Realtime voice + vision</td><td>Gemini Live API, free tier</td><td>Groq Whisper → Gemini Flash → Android text-to-speech</td></tr>
+          <tr><td>Reasoning</td><td>Gemini Flash / Pro, free tier</td><td>Groq (Llama, Qwen), OpenRouter <code>:free</code> models</td></tr>
+          <tr><td>Offline model</td><td>Ollama on the laptop</td><td>A small model on the phone</td></tr>
+          <tr><td>Speech to text (Hindi, English, Hinglish)</td><td>Gemini Live (built in)</td><td>Groq Whisper large-v3, AI4Bharat IndicConformer, Android speech recognition (hi-IN, en-IN)</td></tr>
+          <tr><td>Text to speech</td><td>Gemini Live (built in)</td><td>AI4Bharat Indic Parler-TTS, Kokoro Hindi voices, Android text-to-speech</td></tr>
+          <tr><td>Language detection</td><td>Gemini (same request)</td><td>fastText + a Roman-Hindi word list</td></tr>
+          <tr><td>Wake word "Hey Ronie"</td><td>openWakeWord with a custom model trained on generated clips</td><td>Vosk keyword spotting</td></tr>
+          <tr><td>Voice activity detection</td><td>Silero VAD on the phone</td><td>Android's built-in voice detection</td></tr>
+          <tr><td>OCR</td><td>ML Kit (Latin and Devanagari)</td><td>Gemini vision, Tesseract with Hindi</td></tr>
+          <tr><td>Embeddings</td><td><code>multilingual-e5-small</code> locally</td><td>Gemini embeddings, free tier</td></tr>
+          <tr><td>Vector database</td><td>Chroma or LanceDB</td><td>SQLite with <code>sqlite-vec</code></td></tr>
+          <tr><td>Web search</td><td>Self-hosted SearXNG</td><td>Tavily free tier, Gemini's Google Search tool</td></tr>
+          <tr><td>Chess</td><td>Stockfish</td><td>Lichess cloud evaluation API</td></tr>
+          <tr><td>Poker odds</td><td><code>eval7</code> / <code>treys</code></td><td>AI reasoning</td></tr>
+          <tr><td>Card and piece detection</td><td>YOLO on free Roboflow datasets</td><td>Gemini vision</td></tr>
+          <tr><td>Smart home</td><td>Home Assistant</td><td><code>tinytuya</code>, Broadlink for IR</td></tr>
+          <tr><td>Android TV</td><td><code>androidtvremote2</code></td><td>ADB over the network, <code>pychromecast</code></td></tr>
+          <tr><td>Sound detection</td><td>YAMNet (TensorFlow Lite)</td><td>None needed</td></tr>
+          <tr><td>Maps and routes</td><td>OpenStreetMap + OSRM</td><td>Nominatim</td></tr>
+          <tr><td>Weather</td><td>Open-Meteo (no key)</td><td>None needed</td></tr>
+          <tr><td>Coding agent</td><td>Gemini CLI (free tier)</td><td>Claude Code with a subscription</td></tr>
+          <tr><td>Remote access</td><td>Tailscale free plan</td><td>Local network only</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="stack">
+      <h2>Stack and repo</h2>
+      <div class="scroll"><table>
+        <thead><tr><th>Part</th><th>Technology</th></tr></thead>
+        <tbody>
+          <tr><td>Android app + companion UI</td><td>Kotlin, Jetpack Compose (Material 3), Meta DAT SDK, OkHttp WebSocket, ML Kit, CameraX, Room + SQLCipher, DataStore, Android Keystore, WorkManager</td></tr>
+          <tr><td>Voice</td><td>Gemini Live; openWakeWord; Silero VAD; Android speech as offline fallback</td></tr>
+          <tr><td>Brain server</td><td>Python 3.11, FastAPI, WebSockets, Google Gen AI SDK, Groq SDK, Ollama, Chroma or LanceDB, <code>keyring</code>; optional Anthropic SDK and OpenAI SDK (also for DeepSeek)</td></tr>
+          <tr><td>PC companion</td><td>Python, <code>mss</code> screen capture, PySide6 overlay, VS Code extension in TypeScript, Claude Code / Gemini CLI runner</td></tr>
+          <tr><td>Mission control</td><td>Static HTML + JS served by the brain server</td></tr>
+        </tbody>
+      </table></div>
+      <div class="scroll"><pre class="diagram">ronie/
+├─ android-app/      glasses link, voice, vision, memory, battery manager
+│  └─ ui/            companion app screens, Quick Settings tile, widget
+├─ brain/            FastAPI server
+│  ├─ models/        model router, providers, budgets, fallback chain
+│  ├─ interview/     profile import, STAR builder, practice, live cues
+│  ├─ coding/        analyzer, planner, step tracker, error reader
+│  ├─ games/         detector, state readers, Stockfish, poker odds, rules
+│  ├─ home/          Home Assistant, Android TV, casting, scenes
+│  ├─ translate/     two-person translator relay
+│  ├─ research/      parallel agents
+│  ├─ features/      look and do, briefing, cooking, recap, navigation …
+│  ├─ dashboard/     mission control
+│  └─ tools/         MCP, OpenClaw, calendar
+├─ pc-companion/     screen capture, overlay, VS Code extension, agent runner
+├─ shared/           versioned JSON message schemas for all three parts
+└─ fixtures/         recorded audio (Hindi, English, Hinglish), photos, sample resume</pre></div>
+    </section>
+
+    <section id="team">
+      <h2>Team split</h2>
+      <p>Four workstreams that only meet at the shared message schemas, so each person can build and test alone. With fewer people, merge 3 into 2 and 4 into 1.</p>
+      <div class="scroll"><table>
+        <thead><tr><th>Workstream</th><th>Owns</th></tr></thead>
+        <tbody>
+          <tr><td><strong>1 · Android</strong></td><td>Glasses link, Gemini Live session, wake word, VAD, battery manager, companion app screens, Quick Settings tile</td></tr>
+          <tr><td><strong>2 · Brain</strong></td><td>Model router and providers, interview engine, game engine, memory, translator relay</td></tr>
+          <tr><td><strong>3 · PC</strong></td><td>PC companion, overlay, VS Code extension, coding copilot, Claude Code remote</td></tr>
+          <tr><td><strong>4 · Home and dashboard</strong></td><td>Mission control, Home Assistant, Android TV, look and do, sound awareness</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="phases">
+      <h2>Build plan</h2>
+      <p>About four weeks with four people. Each week ends with something that runs end to end. Tier 2 and tier 3 features come after week 4.</p>
+      <ol class="phases">
+        <li>
+          <div class="ph-head"><strong>Week 1 · Foundation</strong><span class="when">all workstreams</span></div>
+          <ul>
+            <li>Repo, shared schemas, brain pairing by QR, mDNS discovery, mission control skeleton.</li>
+            <li>Meta developer mode, DAT SDK connected, phone-camera test mode.</li>
+            <li>Gemini Live voice + vision end to end in Hindi, English and Hinglish, with VAD and idle session close.</li>
+            <li>Companion app shell: Home, AI and keys, Devices, Voice and language.</li>
+          </ul>
+        </li>
+        <li>
+          <div class="ph-head"><strong>Week 2 · Main modes</strong><span class="when">Android, Brain, PC</span></div>
+          <ul>
+            <li>Coding copilot: PC companion capture → plan → overlay, step tracker, error reader, talk track to the glasses.</li>
+            <li>Interview mode: knowledge base import and STAR builder, live cues, practice rounds.</li>
+            <li>Modes screen, Quick Settings tile, persistent notification controls.</li>
+          </ul>
+        </li>
+        <li>
+          <div class="ph-head"><strong>Week 3 · Actions and providers</strong><span class="when">all workstreams</span></div>
+          <ul>
+            <li>Home Assistant scenes, look to control, Android TV remote, app launching and casting.</li>
+            <li>Look and do. Claude Code remote with spoken approvals.</li>
+            <li>Game mode: chess first, then poker odds, then Monopoly; AI rules engine for the rest.</li>
+            <li>Model router with Claude, OpenAI and DeepSeek, routing rules, budgets and fallback chain.</li>
+          </ul>
+        </li>
+        <li>
+          <div class="ph-head"><strong>Week 4 · Tier 1 and polish</strong><span class="when">all workstreams</span></div>
+          <ul>
+            <li>Sound awareness, two-person translator, offline mode, situational humor.</li>
+            <li>Battery manager with power profiles and the Battery screen.</li>
+            <li>Memory, Privacy and Activity screens. Run the quality targets below and fix what misses.</li>
+          </ul>
+        </li>
+        <li>
+          <div class="ph-head"><strong>After week 4 · Tier 2, then tier 3</strong><span class="when">in table order</span></div>
+          <p>Head-nod confirmation, morning briefing, find my stuff, spatial audio, cooking, PC agent, focus mode; then nightly recap, voice styles, landmark navigation, learn anything, street-smart India mode, Wear OS tile.</p>
+        </li>
+      </ol>
+      <div class="callout"><p>Only have a weekend? Build Gemini Live voice + vision with Hindi and English, the coding copilot, interview live cues, mission control, and a companion app with just keys and mode switching.</p></div>
+    </section>
+
+    <section id="quality">
+      <h2>Quality targets</h2>
+      <div class="scroll"><table>
+        <thead><tr><th>Measure</th><th>Target</th></tr></thead>
+        <tbody>
+          <tr><td>"Hey Ronie" → first spoken word</td><td>Under 1.5 s</td></tr>
+          <tr><td>Interviewer finishes question → keyword whisper</td><td>Under 2 s</td></tr>
+          <tr><td>You stop typing → next code chunk on the overlay</td><td>Under 1 s</td></tr>
+          <tr><td>Smart-home command → device reacts</td><td>Under 1 s on the local network</td></tr>
+          <tr><td>Hinglish recognition on team-recorded clips</td><td>Over 90% of commands understood</td></tr>
+          <tr><td>Glasses battery, Balanced profile, mixed use</td><td>At least 5 hours</td></tr>
+          <tr><td>Phone battery drain from Ronie, Balanced profile</td><td>Under 8% per hour</td></tr>
+        </tbody>
+      </table></div>
+      <ul>
+        <li><strong>Replay harness:</strong> recorded Hindi, English and Hinglish clips and photos in <code>fixtures/</code> run through the full pipeline without glasses, so every change can be tested on a laptop.</li>
+        <li><strong>Mock providers</strong> for each AI API, so tests don't use free-tier quota.</li>
+        <li>Mission control logs timings for every step, so slow parts are easy to spot.</li>
+      </ul>
+    </section>
+
+    <section id="risks">
+      <h2>Risks</h2>
+      <div class="scroll"><table>
+        <thead><tr><th>Risk</th><th>Plan</th></tr></thead>
+        <tbody>
+          <tr><td>DAT SDK is a developer preview and may change</td><td>Phone-camera and phone-mic mode keeps every feature usable without the glasses; the glasses link sits behind one interface.</td></tr>
+          <tr><td>Free-tier rate limits</td><td>Fallback chain Gemini → Groq → Ollama, VAD to cut wasted audio, separate keys for development and daily use.</td></tr>
+          <tr><td>Free tiers change or get cut</td><td>Every provider behind one interface; swapping is a setting in the app.</td></tr>
+          <tr><td>Free-tier data may be used for training</td><td>The Privacy screen says which provider sees what; paid keys or Ollama for sensitive data.</td></tr>
+          <tr><td>Paid API costs grow</td><td>Budget caps per provider, cost per request on mission control and in Activity.</td></tr>
+          <tr><td>Too many features for the time</td><td>Tiers set the order; tier 2 and 3 can slip without breaking anything.</td></tr>
+          <tr><td>Network blocks TV and smart-home discovery</td><td>A travel router for new places; manual device addresses in the Devices screen.</td></tr>
+          <tr><td>Hinglish recognition mistakes, especially offline</td><td>Gemini Live as the main path; replay tests with team recordings; Ronie asks you to repeat when confidence is low.</td></tr>
+          <tr><td>Battery life falls short</td><td>Power profiles, per-feature drain on the Battery screen, Tap to talk as the fallback.</td></tr>
+          <tr><td>Interviewer and user voices mixed up</td><td>Push-to-talk for your own commands in interview mode; speaker separation on the brain server.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <footer>Ronie plan v8 · 30 October 2026 · Ray-Ban Meta Gen 2, Android with companion app, free by default with optional Claude, OpenAI and DeepSeek, Hindi and English</footer>
+  </main>
+</div>
+</body>
+</html>

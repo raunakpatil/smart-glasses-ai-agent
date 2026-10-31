@@ -1,0 +1,20 @@
+[project]
+name = "ronie-pc"
+version = "0.1.0"
+description = "Ronie PC companion: voice client and screen capture"
+requires-python = ">=3.11"
+dependencies = ["websockets>=12", "mss>=9", "sounddevice>=0.4", "numpy>=1.26", "keyring>=25"]
+
+[project.scripts]
+ronie-pc = "ronie_pc.main:main"
+ronie-voice = "ronie_pc.voice:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["ronie_pc*"]
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

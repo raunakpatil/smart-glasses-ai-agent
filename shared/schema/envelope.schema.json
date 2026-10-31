@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ronie.local/schema/envelope.schema.json",
+  "title": "Ronie message envelope",
+  "type": "object",
+  "required": ["v", "type", "payload"],
+  "properties": {
+    "v": { "const": 1 },
+    "type": { "type": "string", "pattern": "^[a-z]+(\\.[a-z_]+)*$" },
+    "id": { "type": "string", "maxLength": 64 },
+    "ts": { "type": "number" },
+    "payload": { "type": "object" }
+  },
+  "additionalProperties": false
+}

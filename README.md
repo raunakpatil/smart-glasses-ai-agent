@@ -6,7 +6,10 @@ An open-source, hands-free AI agent for Ray-Ban Meta smart glasses. Say "Ronie" 
 
 > Not affiliated with, endorsed by, or sponsored by Meta Platforms or Ray-Ban (EssilorLuxottica). "Ray-Ban Meta" is used only to say which glasses this works with.
 
-<!-- Add a 20–30 second demo GIF here: say "Ronie, play Stranger Things on the TV" and show the TV playing it. -->
+<p align="center">
+  <a href="docs/media/launch-film.mp4"><img src="docs/media/preview.gif" alt="Launch film preview: the museum of old tech, Meet Ronie, Netflix on the TV, and Ronie calling a clinic" width="100%"></a>
+</p>
+<p align="center"><b><a href="docs/media/launch-film.mp4">▶ Watch the launch film (1:38, with sound)</a></b></p>
 
 ## What it does
 

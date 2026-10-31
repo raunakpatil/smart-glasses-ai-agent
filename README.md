@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/media/banner.gif" alt="Ronie: the actually smart AI agent for your glasses. Black wayfarer smart glasses floating on black." width="100%"></p>
+
 # Smart Glasses AI Agent
 
 **Make your Ray-Ban Metas do what Meta AI can't.**

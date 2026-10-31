@@ -42,16 +42,7 @@ https://github.com/user-attachments/assets/90b6202b-6237-4d71-889a-12c43a5b61bb
 
 ## How it works
 
-```
- Glasses (mic, speakers, camera)
-        │ Bluetooth
- Android app ── Gemini Live (real-time voice) ──┐
-        │                                        │ tools: web, memory, TV, laptop, games
-        └──────── WebSocket ───────── Brain server (FastAPI, on your laptop or a free cloud VM)
-                                          │                 │
-                                   Laptop agent        TV (via the phone's
-                                   (Windows)           Android TV remote link)
-```
+<p align="center"><img src="docs/media/how-it-works.gif" alt="How it works: the glasses talk to the Android app over Bluetooth; the app streams voice to Gemini Live and talks to the brain server over WebSocket; the brain runs tools and a free model router and reaches the laptop agent; the phone controls the TV over home Wi-Fi." width="100%"></p>
 
 - **Android app** (Kotlin, Jetpack Compose): wake word, the voice session with Gemini Live, the glasses camera (Meta Wearables SDK), and the TV remote.
 - **Brain server** (Python, FastAPI): instructions, tools, shared memory, the free model router (Gemini, Groq, OpenRouter, optional Ollama), web research and pairing.

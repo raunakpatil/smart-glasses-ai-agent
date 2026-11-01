@@ -126,7 +126,7 @@ Six pieces, one conversation. Here's the path a single sentence takes.
 
 <br>
 
-## It gets to know you.
+## Brain: It gets to know you.
 
 <p align="center"><img src="docs/media/brain.gif" alt="The brain: what you say over days and months becomes key facts in memory and a growing profile of you, stored on your server and never shared." width="100%"></p>
 
@@ -173,7 +173,7 @@ The full guide is in **[docs/SETUP.md](docs/SETUP.md)**.
 
 <br>
 
-## Coming next.
+## Coming Soon.
 
 <p align="center"><img src="docs/media/next.gif" alt="Coming next, in development: it makes calls for you, says awkward things for you, books the trip, names the song, watches for your bus, and remembers where you left your keys." width="100%"></p>
 

@@ -80,10 +80,8 @@ Talk the way you talk. More languages are on the way.
 
 ## The app.
 
-<p align="center"><img src="docs/media/app-tour.gif" alt="A tour of the Ronie Android app: Home with a greeting, a rotating 3D brain showing what Ronie remembers and a live voice wave; Modes; Memory; Devices; and the AI models." width="300"></p>
-
 <p align="center">
-  <img src="docs/media/app-home.jpg" alt="Home: the voice card, Ronie's brain cycling through memories, glasses battery and the current mode" width="150">
+  <img src="docs/media/app-tour.gif" alt="A tour of the Ronie Android app: Home with a greeting, a rotating 3D brain showing what Ronie remembers and a live voice wave; Modes; Memory; Devices; and the AI models." width="150">
   <img src="docs/media/app-modes.jpg" alt="Modes: Assistant, Interview mode, Interview practice, Coding, Translator, Game, Focus, Cooking" width="150">
   <img src="docs/media/app-memory.jpg" alt="Memory: everything Ronie knows about you, editable" width="150">
   <img src="docs/media/app-devices.jpg" alt="Devices: start with your glasses, the glasses camera, TV, laptop and the brain server" width="150">

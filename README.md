@@ -78,6 +78,24 @@ Talk the way you talk. More languages are on the way.
 
 <br>
 
+## The app.
+
+<p align="center"><img src="docs/media/app-tour.gif" alt="A tour of the Ronie Android app: Home with a greeting, a rotating 3D brain showing what Ronie remembers and a live voice wave; Modes; Memory; Devices; and the AI models." width="300"></p>
+
+<p align="center">
+  <img src="docs/media/app-home.jpg" alt="Home: the voice card, Ronie's brain cycling through memories, glasses battery and the current mode" width="150">
+  <img src="docs/media/app-modes.jpg" alt="Modes: Assistant, Interview mode, Interview practice, Coding, Translator, Game, Focus, Cooking" width="150">
+  <img src="docs/media/app-memory.jpg" alt="Memory: everything Ronie knows about you, editable" width="150">
+  <img src="docs/media/app-devices.jpg" alt="Devices: start with your glasses, the glasses camera, TV, laptop and the brain server" width="150">
+  <img src="docs/media/app-ai.jpg" alt="AI: the live voice model and every provider's status" width="150">
+</p>
+
+<p align="center">Ronie's brain turns on Home, lighting up whatever it remembers about you. Pick a mode, see and edit every memory,<br>and set up your glasses, TV, laptop and AI keys, all from your phone. A guided setup walks new users through it.</p>
+
+<p align="center"><b><a href="https://github.com/raunakpatil/smart-glasses-ai-agent/releases/latest">Download the app (APK)</a></b></p>
+
+<br>
+
 ## How it works.
 
 <p align="center"><img src="docs/media/how-it-works.gif" alt="How it works: the glasses talk to the Android app over Bluetooth; the app streams voice to the AI model and talks to the brain server over WebSocket; the brain runs tools and a model router and reaches the laptop agent; the phone controls the TV over home Wi-Fi." width="100%"></p>
@@ -135,7 +153,7 @@ You need Ray-Ban Meta glasses, an Android 14+ phone, and a free Gemini API key. 
 
 1. Get free API keys: Gemini (required), Groq and OpenRouter (recommended).
 2. Run the brain on your laptop, or on a free cloud server so it works away from home.
-3. Build and install the Android app, then pair it with the brain.
+3. Install the Android app: **[download the APK](https://github.com/raunakpatil/smart-glasses-ai-agent/releases/latest)** (Android 14+), or build it from `android-app/`. Its setup scans your brain's pairing QR code.
 4. Optional: pair your TV in the app, and add your Windows laptop with one PowerShell command:
    `irm https://raw.githubusercontent.com/raunakpatil/smart-glasses-ai-agent/main/install-agent.ps1 | iex`
 

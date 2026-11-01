@@ -87,7 +87,7 @@ Talk the way you talk. More languages are on the way.
 <br>
 
 
-## Ronie, in your pocket.
+
 =======
 ## Ronie App
 

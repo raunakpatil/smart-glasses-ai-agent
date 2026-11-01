@@ -350,3 +350,28 @@ def test_an_old_database_gets_the_new_columns(settings, home):
     m = Memory(settings, path)
     assert m.facts()[0]["topic"] == "" and m.facts()[0]["expires"] == ""
     m.remember("New fact", topic="x", expires="2099-01-01")
+
+
+async def test_meaning_matches_keep_only_those_near_the_best(settings, memory):
+    # Real embeddings score every memory a little alike (0.6+ for any question), so only memories both close in
+    # meaning and nearly as close as the best one count; a question about nothing saved finds nothing.
+    def unit(*xs):
+        n = sum(x * x for x in xs) ** 0.5
+        return [x / n for x in xs]
+
+    vectors = {
+        "The user's car is parked on level 3.": unit(1, 0.30, 0.2),
+        "The user likes oat milk.": unit(0.55, 1, 0.2),
+        "The user lives in Pune.": unit(0.5, 0.2, 1),
+        "meri gaadi kahan hai": unit(1, 0.25, 0.2),
+        "capital of France": unit(-0.2, 0.3, -0.4),
+    }
+
+    async def embed(texts, task):
+        return [vectors[t] for t in texts]
+
+    memory.embedder = embed
+    for text in list(vectors)[:3]:
+        memory.remember(text, "note", 3)
+    assert [f["text"] for f in await memory.semantic("meri gaadi kahan hai")] == ["The user's car is parked on level 3."]
+    assert await memory.semantic("capital of France") == []

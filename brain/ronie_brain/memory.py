@@ -282,9 +282,14 @@ class Memory:
             return []
         vectors = {r["id"]: array("f", r["vec"]) for r in self.db.execute("SELECT id, vec FROM fact_vectors")}
         floor = float(self.settings["memory_semantic_min"])
+        margin = float(self.settings["memory_semantic_margin"])
         scored = sorted(((_cosine(q[0], vectors[f["id"]]), f) for f in facts if f["id"] in vectors),
                         key=lambda x: -x[0])
-        return [f for score, f in scored[:limit] if score >= floor]
+        if not scored:
+            return []
+        best = scored[0][0]
+        # close enough in meaning, and nearly as close as the best match (the rest are only vaguely related)
+        return [f for score, f in scored[:limit] if score >= floor and score >= best - margin]
 
     async def find(self, query: str, limit: int = 8) -> dict[str, list]:
         """What recall uses: memories matching the words or the meaning, plus past conversation with those words."""

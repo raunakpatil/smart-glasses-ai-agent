@@ -119,7 +119,11 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     # Searching memory by meaning (so "meri gaadi kahan hai" finds "The user's car is parked on level 3") uses
     # Gemini's free embeddings when a Gemini key is set; without one, search falls back to matching words.
     "memory_embed_model": "gemini-embedding-001",
-    "memory_semantic_min": 0.6,  # how close in meaning a memory must be to count as a match (0 to 1)
+    # How close in meaning a memory must be to count (0 to 1), and how near the best match the others must be.
+    # Measured with gemini-embedding-001 at 256 numbers: right answers score 0.76-0.84, unrelated questions
+    # reach 0.62-0.70, and every memory scores above 0.6 for any question, so both rules are needed.
+    "memory_semantic_min": 0.74,
+    "memory_semantic_margin": 0.05,
     # Model chains for the other free providers, by request type (see task_chain).
     # Groq's model list changes; check https://console.groq.com/docs/models.
     "model_chains": {

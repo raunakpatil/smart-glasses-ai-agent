@@ -5,8 +5,9 @@ Three layers, all in ~/.ronie/memory.db:
 - summary: a running summary of older conversation, rewritten during compaction
 - turns:   the conversation itself; recent turns go into every prompt word for word
 
-When the recent conversation grows past a size limit, the Compactor condenses the oldest turns into the
-summary and pulls out important facts, using the free model chain in the background.
+A minute after the conversation goes quiet, the Compactor reads what was said since its last look and saves new
+facts ("I'm a Real Madrid fan"), so they're remembered the same day. When the recent conversation grows past a size
+limit, it also condenses the oldest turns into the summary. Both use the free model chain in the background.
 """
 from __future__ import annotations
 
@@ -89,6 +90,21 @@ class Memory:
 
     def uncompacted_tokens(self) -> int:
         return sum(tokens(r["text"]) for r in self.uncompacted())
+
+    def turns_after(self, turn_id: int) -> list[sqlite3.Row]:
+        return self.db.execute("SELECT * FROM turns WHERE id > ? ORDER BY id", (turn_id,)).fetchall()
+
+    def facts_scanned(self) -> int:
+        """The last turn already read for new facts. Before the first scan: the last compacted turn."""
+        row = self.db.execute("SELECT value FROM meta WHERE key = 'facts_scanned'").fetchone()
+        if row:
+            return int(row["value"])
+        row = self.db.execute("SELECT MAX(id) AS id FROM turns WHERE compacted = 1").fetchone()
+        return row["id"] or 0
+
+    def set_facts_scanned(self, turn_id: int) -> None:
+        self.db.execute("INSERT OR REPLACE INTO meta (key, value) VALUES ('facts_scanned', ?)", (str(turn_id),))
+        self.db.commit()
 
     def mark_compacted(self, up_to_id: int) -> None:
         self.db.execute("UPDATE turns SET compacted = 1 WHERE id <= ?", (up_to_id,))
@@ -198,9 +214,31 @@ Older conversation to fold into memory now:
 
 Return only a JSON object with these keys:
 "summary": an updated summary of all earlier conversations, at most 200 words, in English, keeping names, dates, plans, decisions and anything the user may ask about later;
-"new_facts": a list of new long-term facts worth keeping, each {{"text": "...", "kind": one of {kinds}, "importance": 1-5}}. Include anything the user asked to remember (importance 5), preferences, people, places, plans and personal details. Skip small talk and anything already saved;
+"new_facts": a list of new long-term facts worth keeping, each {{"text": "...", "kind": one of {kinds}, "importance": 1-5}}. {fact_rules};
 "updated_facts": a list of {{"id": number, "text": "..."}} for saved facts that changed;
 "obsolete_fact_ids": ids of saved facts that are no longer true."""
+
+
+FACT_RULES = (
+    "Keep facts about the user's life: anything they asked to remember (importance 5), likes and dislikes, teams and "
+    "fandoms, people, places, work, studies, health, routines and plans with dates. Write each as one short sentence "
+    "about the user. Skip small talk, one-off requests (play this, open that), what Ronie said or did, device or app "
+    "states (battery, volume, settings, pairing, developer mode), passwords, keys and tokens, and anything already saved"
+)
+
+FACTS_PROMPT = """You keep the long-term memory of Ronie, a personal voice assistant.
+Today is {today}. Write every date as an absolute date (e.g. "Friday 31 October 2026"), never "tomorrow" or "next week".
+
+Facts already saved (id: text):
+{facts}
+
+Conversation since the last check:
+{turns}
+
+Return only a JSON object with these keys:
+"new_facts": a list of new long-term facts, each {{"text": "...", "kind": one of {kinds}, "importance": 1-5}}. {fact_rules}. Usually there are none; return [] then;
+"updated_facts": a list of {{"id": number, "text": "..."}} for saved facts this conversation changed;
+"obsolete_fact_ids": ids of saved facts this conversation shows are no longer true."""
 
 
 def parse_json_object(text: str) -> dict:
@@ -217,6 +255,7 @@ class Compactor:
         self.memory, self.settings, self.complete = memory, settings, complete
         self.lock = asyncio.Lock()
         self.task: asyncio.Task | None = None
+        self.facts_task: asyncio.Task | None = None
 
     def needed(self) -> bool:
         return self.memory.uncompacted_tokens() > self.settings["memory_compact_tokens"]
@@ -224,6 +263,53 @@ class Compactor:
     def maybe_schedule(self) -> None:
         if self.needed() and not self.lock.locked() and not (self.task and not self.task.done()):
             self.task = asyncio.create_task(self.compact())
+
+    def note_turn(self) -> None:
+        """A turn was added: (re)start the quiet timer; when it runs out, look for new facts."""
+        if self.facts_task and not self.facts_task.done():
+            self.facts_task.cancel()
+        self.facts_task = asyncio.create_task(self._facts_after_quiet())
+
+    async def _facts_after_quiet(self) -> None:
+        await asyncio.sleep(self.settings["memory_fact_delay"])
+        await self.extract_facts()
+
+    async def extract_facts(self) -> dict:
+        """Read what was said since the last look and save new facts (no summary change)."""
+        async with self.lock:
+            turns = self.memory.turns_after(self.memory.facts_scanned())
+            if not any(t["role"] == "user" for t in turns):
+                if turns:
+                    self.memory.set_facts_scanned(turns[-1]["id"])
+                return {"scanned": len(turns), "facts_added": 0}
+            facts = "\n".join(f"{f['id']}: {f['text']}" for f in self.memory.facts()) or "(none)"
+            convo = "\n".join(f"{'User' if t['role'] == 'user' else 'Ronie'}: {t['text']}" for t in turns)
+            prompt = FACTS_PROMPT.format(
+                today=time.strftime("%A %d %B %Y"), facts=facts, turns=convo, kinds=", ".join(KINDS), fact_rules=FACT_RULES,
+            )
+            try:
+                data = parse_json_object(await self.complete(prompt))
+            except Exception as e:  # try again after the next turn
+                log.warning("Fact check failed: %s", e)
+                return {"scanned": 0, "error": str(e)}
+            added = self._apply_facts(data)
+            self.memory.set_facts_scanned(turns[-1]["id"])
+            log.info("Fact check: %d turns read, %d facts added", len(turns), added)
+            return {"scanned": len(turns), "facts_added": added}
+
+    def _apply_facts(self, data: dict) -> int:
+        added = 0
+        for f in data.get("new_facts") or []:
+            if isinstance(f, dict) and str(f.get("text", "")).strip():
+                self.memory.remember(f["text"], f.get("kind", "note"), f.get("importance", 3), source="compaction")
+                added += 1
+        for f in data.get("updated_facts") or []:
+            if isinstance(f, dict) and isinstance(f.get("id"), int) and str(f.get("text", "")).strip():
+                self.memory.update_fact(f["id"], f["text"])
+        for fid in data.get("obsolete_fact_ids") or []:
+            if isinstance(fid, int):
+                self.memory.forget(fid)
+        return added
 
     async def compact(self) -> dict:
         async with self.lock:
@@ -237,6 +323,7 @@ class Compactor:
             prompt = COMPACT_PROMPT.format(
                 today=time.strftime("%A %d %B %Y"),
                 summary=self.memory.summary() or "(none yet)", facts=facts, turns=convo, kinds=", ".join(KINDS),
+                fact_rules=FACT_RULES,
             )
             try:
                 data = parse_json_object(await self.complete(prompt))
@@ -245,17 +332,7 @@ class Compactor:
                 return {"folded": 0, "error": str(e)}
             if isinstance(data.get("summary"), str) and data["summary"].strip():
                 self.memory.set_summary(data["summary"])
-            added = 0
-            for f in data.get("new_facts") or []:
-                if isinstance(f, dict) and str(f.get("text", "")).strip():
-                    self.memory.remember(f["text"], f.get("kind", "note"), f.get("importance", 3), source="compaction")
-                    added += 1
-            for f in data.get("updated_facts") or []:
-                if isinstance(f, dict) and isinstance(f.get("id"), int) and str(f.get("text", "")).strip():
-                    self.memory.update_fact(f["id"], f["text"])
-            for fid in data.get("obsolete_fact_ids") or []:
-                if isinstance(fid, int):
-                    self.memory.forget(fid)
+            added = self._apply_facts(data)
             self.memory.mark_compacted(to_fold[-1]["id"])
             log.info("Memory compacted: %d turns folded, %d facts added", len(to_fold), added)
             return {"folded": len(to_fold), "facts_added": added}

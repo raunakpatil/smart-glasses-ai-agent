@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -23,6 +25,28 @@ android {
         manifestPlaceholders["mwdat_application_id"] = "0"
         manifestPlaceholders["mwdat_client_token"] = "0"
     }
+
+    // Release signing comes from android-app/keystore.properties (never committed). Without it, release builds are unsigned.
+    val keystoreProps = rootProject.file("keystore.properties").takeIf { it.exists() }?.let { f ->
+        Properties().apply { f.inputStream().use { load(it) } }
+    }
+    signingConfigs {
+        if (keystoreProps != null) create("release") {
+            storeFile = file(keystoreProps.getProperty("storeFile"))
+            storePassword = keystoreProps.getProperty("storePassword")
+            keyAlias = keystoreProps.getProperty("keyAlias")
+            keyPassword = keystoreProps.getProperty("keyPassword")
+        }
+    }
+    buildTypes {
+        release {
+            isMinifyEnabled = false // the Meta and Vosk SDKs use reflection; keep it simple
+            signingConfig = signingConfigs.findByName("release")
+        }
+    }
+
+    // AGP's release lint crashes on this toolchain ("25.0.4" internal error); the debug build checks the same code.
+    lint { checkReleaseBuilds = false }
 
     buildFeatures { compose = true }
 
@@ -50,6 +74,8 @@ dependencies {
     // Meta Wearables Device Access Toolkit (glasses camera), from Maven Central.
     implementation("com.meta.wearable:mwdat-core:1.0.1")
     implementation("com.meta.wearable:mwdat-camera:1.0.1")
+    // Google's QR scanner (no camera permission; Play services shows the scanner) for the brain pairing code.
+    implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
     // Vosk: offline "Ronie" wake word.
     implementation("com.alphacephei:vosk-android:0.3.75@aar")
     implementation("net.java.dev.jna:jna:5.13.0@aar")

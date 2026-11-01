@@ -20,3 +20,5 @@ cloud.env
 # The owner's private work log (setup details, devices, accounts)
 STATUS.md
 *.keystore
+keystore.properties
+

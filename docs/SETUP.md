@@ -145,13 +145,33 @@ Any Android TV or Google TV on the same Wi-Fi. No developer mode is needed: the 
 
 ## 5. Optional: your Windows laptop
 
-With the brain on your laptop (option A), laptop control works straight away. With the brain on a cloud server (option B), run the **laptop agent** so the server can reach your laptop:
+With the brain on your laptop (option A), laptop control works straight away. With the brain on a cloud server (option B), install the **laptop agent** so the server can reach your laptop. It takes one command.
+
+1. Open **PowerShell** on the laptop and paste:
+
+   ```powershell
+   irm https://raw.githubusercontent.com/raunakpatil/smart-glasses-ai-agent/main/install-agent.ps1 | iex
+   ```
+
+2. When it asks, paste the same **pairing code** you gave the phone app (from `ronie-brain pairing-code` on the server).
+
+That's it. It installs Python if you don't have it, sets up the agent in `%LOCALAPPDATA%\Ronie\agent`, starts it with no window, starts it again every time you sign in, and tells you when it has reached your server. Then pick your browser in the app: **Devices → Laptop**.
+
+- **Update it:** run the same command again.
+- **Remove it:**
+
+  ```powershell
+  & ([scriptblock]::Create((irm https://raw.githubusercontent.com/raunakpatil/smart-glasses-ai-agent/main/install-agent.ps1))) -Uninstall
+  ```
+- **Not connecting?** Its log is `%LOCALAPPDATA%\Ronie\agent\agent.log`. It keeps retrying, so once the server is up it connects by itself.
+
+<details>
+<summary>Running it by hand instead (for developers)</summary>
 
 1. Set up `brain/` on the laptop as in option A. You don't need to start the server.
-2. Copy `cloud.env.example` to `cloud.env` and fill in your server and its pairing token: `RONIE_SERVER=ubuntu@1.2.3.4`, `RONIE_URL=wss://1-2-3-4.sslip.io`, and `RONIE_TOKEN=` set to the `token` value inside the pairing code from step 2. This file isn't committed.
-3. Double-click `start-agent.cmd`. Mission control on the server shows the laptop as connected.
-4. To start it with Windows, press Win+R, type `shell:startup`, and create a shortcut there to `start-agent-hidden.vbs`.
-5. Pick your browser in the app: **Devices → Laptop**.
+2. Copy `cloud.env.example` to `cloud.env` and fill in `RONIE_URL=wss://1-2-3-4.sslip.io` and `RONIE_TOKEN=` (the `token` value inside the pairing code). This file isn't committed.
+3. Double-click `start-agent.cmd`, or for no window at sign-in put a shortcut to `start-agent-hidden.vbs` in `shell:startup`.
+</details>
 
 At home, explanations then appear on the screen you're facing. On the laptop you get a video on one display and an article on the laptop screen, or side by side with one display.
 

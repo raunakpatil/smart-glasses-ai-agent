@@ -1,6 +1,5 @@
 package com.ronie.app.ui
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
@@ -9,12 +8,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,10 +22,10 @@ import androidx.compose.ui.unit.sp
 import com.ronie.app.R
 
 /*
- * Ronie's design language: a soft grey page with white panels and near-black "ink"
- * cards (16 dp corners), light-weight tight headlines, small UPPERCASE monospace labels, a dark pill for the selected
- * tab, and one bright accent (magenta) for what's live, with coral, blue and green from the site for the rest.
- * Every colour on screen comes from here, so both themes keep readable contrast.
+ * Ronie's design language: a black page, near-black cards with a soft coloured glow bleeding in from one side,
+ * big light-weight headlines, dot-matrix numbers, round icon buttons, and pill buttons that end in a white circle.
+ * One glow per card (magenta, violet, coral, mint), and a lime tick for "this one / now". The app is always dark,
+ * like the glasses' own world; every colour on screen comes from here.
  */
 
 /** Status colours Material doesn't have: ok / in progress / problem, each with a container and text on it. */
@@ -41,56 +36,56 @@ data class StatusColors(
     val danger: Color, val dangerContainer: Color, val onDangerContainer: Color,
 )
 
-/** The site's dark cards, used for the hero card in both themes, and the live accent. */
+/** The page, card and text colours, plus the live accent. */
 @Immutable
-data class InkColors(val card: Color, val line: Color, val onCard: Color, val onCard2: Color, val live: Color)
+data class InkColors(
+    val page: Color, val card: Color, val raised: Color, val line: Color,
+    val onCard: Color, val onCard2: Color, val onCard3: Color,
+    val live: Color, val tick: Color,
+)
+
+/** A card's glow: the bright core and the deep edge it fades through before reaching the card colour. */
+@Immutable
+data class Glow(val core: Color, val edge: Color)
+
+object Glows {
+    val Magenta = Glow(Color(0xFFF062C8), Color(0xFF6E1A5C))
+    val Violet = Glow(Color(0xFF6B6BFF), Color(0xFF231C6E))
+    val Coral = Glow(Color(0xFFFF6A3D), Color(0xFF6E2414))
+    val Mint = Glow(Color(0xFF8FD8BE), Color(0xFF1D4F45))
+    val Rose = Glow(Color(0xFFE88AA8), Color(0xFF5A2236))
+    val Ice = Glow(Color(0xFF9CC9FF), Color(0xFF1C3756))
+    val all = listOf(Magenta, Violet, Coral, Mint, Rose, Ice)
+}
 
 private val Ink = InkColors(
-    card = Color(0xFF151515), line = Color(0xFF2A2A2A), onCard = Color(0xFFF3F3F3), onCard2 = Color(0xFF9A9A9A),
-    live = Color(0xFFE879F9),
+    page = Color(0xFF000000), card = Color(0xFF111113), raised = Color(0xFF1C1C1F), line = Color(0xFF26262A),
+    onCard = Color(0xFFF5F5F7), onCard2 = Color(0xFFA1A1A8), onCard3 = Color(0xFF6B6B72),
+    live = Color(0xFFE879F9), tick = Color(0xFFD9F55B),
 )
 
-private val DarkStatus = StatusColors(
-    success = Color(0xFF4CC48F), successContainer = Color(0xFF12301F), onSuccessContainer = Color(0xFFBDEBD3),
-    warning = Color(0xFFF2B44D), warningContainer = Color(0xFF33270F), onWarningContainer = Color(0xFFF7DCA8),
-    danger = Color(0xFFFF7A5C), dangerContainer = Color(0xFF3A1A12), onDangerContainer = Color(0xFFFFC9BC),
+private val Status = StatusColors(
+    success = Color(0xFF6EE0A8), successContainer = Color(0xFF10291D), onSuccessContainer = Color(0xFFC4F2DA),
+    warning = Color(0xFFF5C25B), warningContainer = Color(0xFF2E2410), onWarningContainer = Color(0xFFF8E1AE),
+    danger = Color(0xFFFF7A5C), dangerContainer = Color(0xFF34160F), onDangerContainer = Color(0xFFFFCCBF),
 )
 
-private val LightStatus = StatusColors(
-    success = Color(0xFF2F9E6B), successContainer = Color(0xFFDCF2E7), onSuccessContainer = Color(0xFF14462F),
-    warning = Color(0xFFB7791F), warningContainer = Color(0xFFFBEBD0), onWarningContainer = Color(0xFF5A3A0B),
-    danger = Color(0xFFC2412A), dangerContainer = Color(0xFFFBE0DA), onDangerContainer = Color(0xFF5E1A0E),
+private val Colors = darkColorScheme(
+    primary = Color(0xFFF5F5F7), onPrimary = Color(0xFF0A0A0B),           // white pills with black text
+    primaryContainer = Ink.raised, onPrimaryContainer = Ink.onCard,
+    secondary = Glows.Violet.core, onSecondary = Color(0xFF0A0A0B),
+    secondaryContainer = Ink.raised, onSecondaryContainer = Ink.onCard,
+    tertiary = Ink.live, onTertiary = Color(0xFF0A0A0B),
+    background = Ink.page, onBackground = Ink.onCard,
+    surface = Ink.card, onSurface = Ink.onCard,
+    surfaceVariant = Ink.raised, onSurfaceVariant = Ink.onCard2,
+    surfaceContainer = Ink.card, surfaceContainerHigh = Ink.raised, surfaceContainerHighest = Ink.raised,
+    surfaceContainerLow = Ink.card, surfaceContainerLowest = Ink.page,
+    outline = Ink.line, outlineVariant = Color(0xFF1E1E21),
+    error = Status.danger, onError = Color(0xFF0A0A0B),
 )
 
-private val LightColors = lightColorScheme(
-    primary = Color(0xFF111111), onPrimary = Color(0xFFFFFFFF),          // ink buttons, like the site's dark pill
-    primaryContainer = Color(0xFFE6E6E6), onPrimaryContainer = Color(0xFF111111),
-    secondary = Color(0xFF2B3FA8), onSecondary = Color(0xFFFFFFFF),      // the site's blue
-    secondaryContainer = Color(0xFFE3E7FA), onSecondaryContainer = Color(0xFF1B2A78),
-    tertiary = Color(0xFFE8553B), onTertiary = Color(0xFFFFFFFF),        // the site's coral
-    background = Color(0xFFF2F2F2), onBackground = Color(0xFF111111),
-    surface = Color(0xFFFFFFFF), onSurface = Color(0xFF111111),
-    surfaceVariant = Color(0xFFF2F2F2), onSurfaceVariant = Color(0xFF5E5E5E),
-    surfaceContainer = Color(0xFFFFFFFF), surfaceContainerHigh = Color(0xFFF7F7F7),
-    outline = Color(0xFFD8DCE0), outlineVariant = Color(0xFFE6E6E6),
-    error = Color(0xFFC2412A), onError = Color(0xFFFFFFFF),
-)
-
-private val DarkColors = darkColorScheme(
-    primary = Color(0xFFF3F3F3), onPrimary = Color(0xFF111111),
-    primaryContainer = Color(0xFF2A2A2A), onPrimaryContainer = Color(0xFFF3F3F3),
-    secondary = Color(0xFF9AA8FF), onSecondary = Color(0xFF101A55),
-    secondaryContainer = Color(0xFF1E2550), onSecondaryContainer = Color(0xFFDCE1FF),
-    tertiary = Color(0xFFFF7A5C), onTertiary = Color(0xFF3A1208),
-    background = Color(0xFF0C0D0E), onBackground = Color(0xFFF3F3F3),
-    surface = Color(0xFF151515), onSurface = Color(0xFFF3F3F3),
-    surfaceVariant = Color(0xFF1C1C1C), onSurfaceVariant = Color(0xFF9A9A9A),
-    surfaceContainer = Color(0xFF151515), surfaceContainerHigh = Color(0xFF1C1C1C),
-    outline = Color(0xFF2A2A2A), outlineVariant = Color(0xFF222222),
-    error = Color(0xFFFF7A5C), onError = Color(0xFF3A1208),
-)
-
-/** The site's fonts (OFL, from Google Fonts): Inter Tight for text, JetBrains Mono for labels. */
+/** Inter Tight for text, JetBrains Mono for small labels (both OFL, bundled). */
 val Sans = FontFamily(
     Font(R.font.inter_tight_300, FontWeight.Light),
     Font(R.font.inter_tight_400, FontWeight.Normal),
@@ -104,46 +99,41 @@ val Mono = FontFamily(
     Font(R.font.jetbrains_mono_500, FontWeight.Bold),
 )
 
-/** Light, tight headlines (the site's 300-weight "Hello Stranger"), 15–16 sp body, small mono uppercase labels. */
+/** Big light headlines with tight tracking, calm 15–16 sp body, small mono uppercase labels. */
 private val RonieTypography = Typography().run {
     copy(
-        displayLarge = displayLarge.copy(fontFamily = Sans),
-        displayMedium = displayMedium.copy(fontFamily = Sans),
-        displaySmall = displaySmall.copy(fontFamily = Sans, fontWeight = FontWeight.Light, letterSpacing = (-1).sp),
-        headlineLarge = headlineLarge.copy(fontFamily = Sans, fontWeight = FontWeight.Light, letterSpacing = (-1).sp),
-        headlineMedium = headlineMedium.copy(fontFamily = Sans, fontWeight = FontWeight.Light, letterSpacing = (-0.8).sp),
-        headlineSmall = headlineSmall.copy(fontFamily = Sans, fontWeight = FontWeight.Light, letterSpacing = (-0.5).sp),
-        titleLarge = titleLarge.copy(fontFamily = Sans, fontWeight = FontWeight.Normal, letterSpacing = (-0.3).sp),
-        titleMedium = titleMedium.copy(fontFamily = Sans, fontWeight = FontWeight.Medium),
+        displayLarge = displayLarge.copy(fontFamily = Sans, fontWeight = FontWeight.Light, letterSpacing = (-2.5).sp),
+        displayMedium = displayMedium.copy(fontFamily = Sans, fontWeight = FontWeight.Light, letterSpacing = (-2).sp),
+        displaySmall = displaySmall.copy(fontFamily = Sans, fontWeight = FontWeight.Light, letterSpacing = (-1.4).sp),
+        headlineLarge = headlineLarge.copy(fontFamily = Sans, fontWeight = FontWeight.Light, letterSpacing = (-1.2).sp),
+        headlineMedium = headlineMedium.copy(fontFamily = Sans, fontWeight = FontWeight.Light, letterSpacing = (-0.9).sp),
+        headlineSmall = headlineSmall.copy(fontFamily = Sans, fontWeight = FontWeight.Light, letterSpacing = (-0.6).sp),
+        titleLarge = titleLarge.copy(fontFamily = Sans, fontWeight = FontWeight.Normal, letterSpacing = (-0.4).sp),
+        titleMedium = titleMedium.copy(fontFamily = Sans, fontWeight = FontWeight.Medium, letterSpacing = (-0.2).sp),
         titleSmall = titleSmall.copy(fontFamily = Sans, fontWeight = FontWeight.Medium),
         bodyLarge = bodyLarge.copy(fontFamily = Sans, fontSize = 16.sp, lineHeight = 24.sp),
         bodyMedium = bodyMedium.copy(fontFamily = Sans, fontSize = 15.sp, lineHeight = 22.sp),
-        bodySmall = bodySmall.copy(fontFamily = Sans),
-        labelLarge = labelLarge.copy(fontFamily = Sans, fontWeight = FontWeight.Medium),
+        bodySmall = bodySmall.copy(fontFamily = Sans, fontSize = 13.sp, lineHeight = 18.sp),
+        labelLarge = labelLarge.copy(fontFamily = Sans, fontWeight = FontWeight.Medium, fontSize = 15.sp),
         labelMedium = labelMedium.copy(fontFamily = Sans),
-        labelSmall = labelSmall.copy(fontFamily = Mono, fontSize = 11.sp, letterSpacing = 0.9.sp),
+        labelSmall = labelSmall.copy(fontFamily = Mono, fontSize = 11.sp, letterSpacing = 1.sp),
     )
 }
 
-private val LocalStatus = staticCompositionLocalOf { LightStatus }
-
 @Composable
-fun RonieTheme(dark: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    CompositionLocalProvider(LocalStatus provides if (dark) DarkStatus else LightStatus) {
-        MaterialTheme(colorScheme = if (dark) DarkColors else LightColors, typography = RonieTypography, content = content)
-    }
+fun RonieTheme(content: @Composable () -> Unit) {
+    MaterialTheme(colorScheme = Colors, typography = RonieTypography, content = content)
 }
 
 /** Theme extras: `Ronie.status.success`, `Ronie.ink.card` … */
 object Ronie {
-    val status: StatusColors
-        @Composable @ReadOnlyComposable get() = LocalStatus.current
+    val status: StatusColors get() = Status
     val ink: InkColors get() = Ink
 }
 
-/** A small UPPERCASE monospace label with an optional icon, like the site's "◷ TIME SPENT IN AI / ML". */
+/** A small UPPERCASE monospace label with an optional icon. */
 @Composable
-fun MonoLabel(text: String, icon: ImageVector? = null, color: Color = MaterialTheme.colorScheme.onSurfaceVariant, modifier: Modifier = Modifier) {
+fun MonoLabel(text: String, icon: ImageVector? = null, color: Color = Ink.onCard2, modifier: Modifier = Modifier) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         if (icon != null) Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(14.dp))
         Text(text.uppercase(), style = MaterialTheme.typography.labelSmall, color = color)

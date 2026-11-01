@@ -264,6 +264,7 @@ def create_app(
     def record(role: str, text: str, source: str) -> None:
         if memory.add_turn(role, text, source):
             compactor.maybe_schedule()
+            compactor.note_turn()
 
     def interview_hint() -> str:
         """Names and skills from the profile help Whisper spell them right."""
@@ -341,6 +342,7 @@ def create_app(
         advertiser = Advertiser(lan_ip(), port) if advertise else None
         if advertiser:
             await advertiser.start()
+        compactor.note_turn()  # catch up on facts from chats since the last look (e.g. before a restart)
         yield
         laptop.stop()
         if advertiser:

@@ -108,6 +108,7 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     },
     # Shared memory (see memory.py). Token counts are rough (about 4 characters per token).
     "memory_compact_tokens": 3000,  # fold older conversation into the summary past this size
+    "memory_fact_delay": 60,  # seconds of quiet after a turn before looking for new facts in it
     "memory_keep_turns": 8,  # turns kept word for word after compaction
     "memory_recent_turns": 12,  # recent turns included in every prompt
     "memory_max_facts": 30,  # long-term facts included in every prompt

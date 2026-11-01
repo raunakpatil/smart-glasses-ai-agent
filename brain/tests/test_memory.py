@@ -118,6 +118,30 @@ async def test_compaction_scheduled_when_conversation_grows(settings, memory):
     assert calls
 
 
+async def test_facts_found_after_a_short_quiet_chat(settings, memory):
+    # A short chat never reaches the compaction size, but its facts are saved once it goes quiet.
+    settings.update({"memory_fact_delay": 0})
+    prompts = []
+
+    async def fake_llm(prompt):
+        prompts.append(prompt)
+        return json.dumps({"new_facts": [{"text": "The user supports Real Madrid.", "kind": "preference", "importance": 4}]})
+
+    compactor = Compactor(memory, settings, fake_llm)
+    memory.add_turn("user", "I'm a fan of Real Madrid.", "voice")
+    memory.add_turn("ronie", "Nice, they're flying this season.", "voice")
+    compactor.note_turn()
+    await compactor.facts_task
+    assert "I'm a fan of Real Madrid." in prompts[0] and "battery" in prompts[0]  # junk rules are in the prompt
+    assert [f["text"] for f in memory.facts()] == ["The user supports Real Madrid."]
+    assert not memory.uncompacted_tokens() > settings["memory_compact_tokens"]  # no compaction was needed
+
+    # The next look only reads what's new; Ronie talking alone costs no model call.
+    memory.add_turn("ronie", "Anything else?", "voice")
+    assert await compactor.extract_facts() == {"scanned": 1, "facts_added": 0}
+    assert len(prompts) == 1
+
+
 def test_parse_json_object_handles_wrapped_json():
     assert parse_json_object('Here: {"a": {"b": 1}} done') == {"a": {"b": 1}}
 

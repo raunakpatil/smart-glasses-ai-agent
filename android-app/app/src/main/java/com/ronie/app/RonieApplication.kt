@@ -179,6 +179,21 @@ class RonieApplication : Application() {
             }
         }
 
+    /** What Ronie calls the user on Home ("Good evening, Sam"); asked during setup, kept only on this phone. */
+    var userName: String
+        get() = prefs().getString("user_name", "").orEmpty()
+        set(value) {
+            prefs().edit().putString("user_name", value.trim()).apply()
+            _nameFlow.value = value.trim()
+        }
+    private val _nameFlow by lazy { MutableStateFlow(userName) }
+    val nameFlow: StateFlow<String> get() = _nameFlow
+
+    /** First-run setup finished (or skipped because this phone was already paired before setup existed). */
+    var onboarded: Boolean
+        get() = prefs().getBoolean("onboarded", prefs().contains("pairing"))
+        set(value) = prefs().edit().putBoolean("onboarded", value).apply()
+
     /** Listen for "Ronie" by itself whenever the glasses connect (the "Ronie is ready" background service). */
     var autoListen: Boolean
         get() = prefs().getBoolean("auto_listen", true)

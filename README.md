@@ -13,7 +13,7 @@
 
 <p align="center"><b>Your Ray-Ban Metas. Finally smart.</b></p>
 
-<p align="center">An open-source, hands-free AI agent for Ray-Ban Meta glasses.<br>Say "Ronie" and just talk. It sees what you see, runs your TV and laptop,<br>and remembers your life. Free to run. No subscription.</p>
+<p align="center">An open-source, hands-free AI agent for Ray-Ban Meta glasses.<br>Say "Ronie" and just talk. It sees what you see, browses the web for live answers,<br>runs your TV and laptop, and remembers your life. Free to run. No subscription.</p>
 
 <p align="center"><sub>Not affiliated with, endorsed by, or sponsored by Meta Platforms or Ray-Ban (EssilorLuxottica). "Ray-Ban Meta" only names the glasses this works with.</sub></p>
 
@@ -49,7 +49,7 @@ Make, model, roughly what it costs. Just from a look.
 Three hours later: "Where did I park?" It knows. It remembers your people, plans and preferences too, across every model you use.
 
 **"Who won the race today?"**<br>
-It searches the web live and gives you one clean sentence, not ten blue links.
+Ronie has the web at its fingertips. It searches, opens and reads the top pages itself, and gives you one clean sentence, not ten blue links. Scores, news, prices, opening hours: anything that changed today.
 
 **"Stop."**<br>
 It stops talking instantly and listens. Interrupt it any time, like a person.
@@ -132,7 +132,8 @@ You need Ray-Ban Meta glasses, an Android 14+ phone, and a free Gemini API key. 
 1. Get free API keys: Gemini (required), Groq and OpenRouter (recommended).
 2. Run the brain on your laptop, or on a free cloud server so it works away from home.
 3. Build and install the Android app, then pair it with the brain.
-4. Optional: pair your TV in the app, and run the laptop agent.
+4. Optional: pair your TV in the app, and add your Windows laptop with one PowerShell command:
+   `irm https://raw.githubusercontent.com/raunakpatil/smart-glasses-ai-agent/main/install-agent.ps1 | iex`
 
 The full guide is in **[docs/SETUP.md](docs/SETUP.md)**.
 

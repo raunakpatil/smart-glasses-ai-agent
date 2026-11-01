@@ -78,7 +78,7 @@ Talk the way you talk. More languages are on the way.
 
 <br>
 
-## The app.
+## Ronie App
 
 <p align="center">
   <img src="docs/media/app-tour.gif" alt="A tour of the Ronie Android app: Home with a greeting, a rotating 3D brain showing what Ronie remembers and a live voice wave; Modes; Memory; Devices; and the AI models." width="150">

@@ -1,5 +1,14 @@
 <p align="center"><img src="docs/media/banner.gif" alt="Ronie: the actually smart AI agent for your glasses. Works with Gemini, Claude, ChatGPT and DeepSeek." width="100%"></p>
 
+<p align="center">
+  <a href="https://raunakpatil.com/"><img src="https://img.shields.io/badge/Website-7f77dd?style=for-the-badge&logo=globe&logoColor=white" alt="Website"></a>
+  <a href="https://www.linkedin.com/in/raunakpatil/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+  <a href="https://www.instagram.com/raunakpatil/"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+  <a href="https://www.youtube.com/@eldritchlore"><img src="https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="YouTube"></a>
+  <a href="https://github.com/raunakpatil"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+  <a href="mailto:raunakpatil15@gmail.com"><img src="https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white" alt="Email"></a>
+</p>
+
 <h1 align="center">Smart Glasses AI Agent</h1>
 
 <p align="center"><b>Your Ray-Ban Metas. Finally smart.</b></p>

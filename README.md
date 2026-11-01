@@ -31,6 +31,12 @@ https://github.com/user-attachments/assets/24abf23e-2b7b-436d-a97f-da1470be848b
 
 ## Things you didn't know glasses could do.
 
+<p align="center"><img src="docs/media/things.gif" alt="Just say it: ten things Ronie does. Every screen at once, no remote needed, chess and poker, interview mode, reads the menu, names the car, remembers for you, the live web, interrupt any time, and Hindi, English or both." width="100%"></p>
+
+<details>
+<summary>Read all ten</summary>
+<br>
+
 **"Explain how black holes form."**<br>
 You're on the sofa. The answer starts in your ear, a video starts on the TV, and an article opens on the laptop in front of you. It took a photo to see which screen you're facing.
 
@@ -60,6 +66,8 @@ It stops talking instantly and listens. Interrupt it any time, like a person.
 
 **Hindi, English, and the mix of both.**<br>
 Talk the way you talk. More languages are on the way.
+
+</details>
 
 <br>
 

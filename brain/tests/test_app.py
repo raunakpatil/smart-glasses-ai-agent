@@ -201,3 +201,42 @@ def test_phone_changes_voice(settings, budget, pairing, keys):
             ws.send_json({"v": 1, "type": "settings.update", "id": "v3", "payload": {"settings": {"live_voice": "Nobody"}}})
             assert ws.receive_json()["payload"]["code"] == "bad_voice"
     assert settings["live_voice"] == "Orus"
+
+
+def test_memories_learned_mid_session_reach_the_voice_session(settings, budget, pairing, keys):
+    async def fake_token(api_key):
+        return {"token": "auth_tokens/abc", "url": "wss://example/constrained", "start_by": 1, "expires_at": 2}
+
+    keys.set("gemini", "gem-key")
+    app = create_app(settings=settings, keys=keys, budget=budget, pairing=pairing, providers={},
+                     local_hosts=frozenset({"testclient"}), page_hosts=frozenset({"testserver"}),
+                     live_token=fake_token, advertise=False)
+    with TestClient(app) as c:
+        with c.websocket_connect("/ws/phone") as ws:
+            ws.send_json(hello(pairing.token))
+            ws.receive_json()
+            ws.send_json({"v": 1, "type": "live.start", "id": "s1", "payload": {}})
+            assert ws.receive_json()["type"] == "live.ready"
+            c.post("/api/memory/facts", json={"text": "The user's sister lands at 6 pm."})  # from another device
+            ws.send_json({"v": 1, "type": "tool.call", "id": "t1", "payload": {"name": "clock", "args": {}}})
+            first = ws.receive_json()["payload"]["result"]
+            ws.send_json({"v": 1, "type": "tool.call", "id": "t2", "payload": {"name": "clock", "args": {}}})
+            second = ws.receive_json()["payload"]["result"]
+    assert first["memory_update"] == ["The user's sister lands at 6 pm."] and "time" in first
+    assert "memory_update" not in second  # told once
+
+
+def test_a_memory_can_be_corrected_from_the_phone_and_mission_control(settings, budget, pairing, keys):
+    with client_for(settings, budget, pairing, keys) as c:
+        fid = c.post("/api/memory/facts", json={"text": "Mom's birthday is 12 March."}).json()["facts"][0]["id"]
+        with c.websocket_connect("/ws/phone") as ws:
+            ws.send_json(hello(pairing.token))
+            ws.receive_json()
+            ws.send_json({"v": 1, "type": "memory.update", "id": "u1", "payload": {"id": fid, "text": "Mom's birthday is 21 March."}})
+            assert ws.receive_json()["payload"] == {"ok": True}
+            ws.send_json({"v": 1, "type": "memory.update", "id": "u2", "payload": {"id": 999, "text": "x"}})
+            assert ws.receive_json()["payload"] == {"ok": False}
+        assert c.get("/api/memory").json()["facts"][0]["text"] == "Mom's birthday is 21 March."
+        facts = c.put(f"/api/memory/facts/{fid}", json={"text": "Mom's birthday is 22 March."}).json()["facts"]
+        assert facts[0]["text"] == "Mom's birthday is 22 March."
+        assert c.put("/api/memory/facts/999", json={"text": "x"}).status_code == 404

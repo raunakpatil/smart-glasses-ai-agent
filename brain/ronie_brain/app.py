@@ -29,6 +29,7 @@ from .live_tokens import LiveTokenError, create_live_token
 from .memory import Compactor, Memory
 from .models import AllProvidersFailed, LLMRequest, Provider, Router
 from .models.budget import Budget
+from .models.gemini import gemini_embed
 from .models.providers import build_providers
 from .pairing import Pairing, lan_ip
 from .room_audio import LaptopListener
@@ -153,6 +154,16 @@ def create_app(
         return (await router.complete(LLMRequest(prompt, task="memory", raw=True, max_tokens=2048))).text
 
     compactor = Compactor(memory, settings, memory_llm)
+
+    async def embed(texts: list[str], task: str) -> list[list[float]] | None:
+        key = keys.get("gemini")
+        return await gemini_embed(key, settings["memory_embed_model"], texts, task) if key else None
+
+    if memory.embedder is None:
+        memory.embedder = embed
+    # Voice sessions get the memory once, as they start. Anything learned after that (the background fact check,
+    # another device) rides along with the session's next tool result, by socket: when it last got the memory.
+    memory_seen: dict[int, float] = {}
     interview = interview or Interview()
     tools = Tools(router, memory, web or Web(keys), interview)
     phone_replies: dict[str, asyncio.Future] = {}  # requests the brain sent to a phone, by message id
@@ -440,7 +451,7 @@ def create_app(
     async def api_live_config(request: Request) -> dict:
         """Ronie's instructions and tools for a Gemini Live voice session (the PC voice client uses this)."""
         require_local(request)
-        return live_config(settings, memory.context())
+        return live_config(settings, await memory.session_context())
 
     def interview_state() -> dict:
         return {
@@ -574,6 +585,15 @@ def create_app(
             raise HTTPException(422, "Enter something to remember")
         memory.remember(body.text, "note", 5, source="mission control")
         await hub.dashboard_event("memory", f"Remembered: {body.text.strip()}")
+        return await get_memory(request)
+
+    @app.put("/api/memory/facts/{fact_id}")
+    async def edit_fact(fact_id: int, body: FactBody, request: Request) -> dict:
+        require_mission_control(request)
+        if not body.text.strip():
+            raise HTTPException(422, "Enter the corrected memory")
+        if not memory.update_fact(fact_id, body.text):
+            raise HTTPException(404, "Not found")
         return await get_memory(request)
 
     @app.delete("/api/memory/facts/{fact_id}")
@@ -740,11 +760,16 @@ def create_app(
 
             async def run_tool() -> None:
                 await hub.dashboard_event("tool", f"{name}: {json.dumps(args, ensure_ascii=False)[:200]}", {"source": role})
+                seen, started = memory_seen.get(id(ws)), time.time()
                 try:
                     result = await tools.run(name, args)
                 except Exception:
                     log.exception("tool %s failed", name)
                     result = {"error": "Tool failed"}
+                if seen is not None:
+                    memory_seen[id(ws)] = started
+                    if news := [f["text"] for f in memory.facts_changed_since(seen) if f["updated"] <= started]:
+                        result = {**result, "memory_update": news}
                 log_tool(role, name, args, result)
                 await hub.dashboard_event("tool", f"{name} -> {json.dumps(result, ensure_ascii=False)[:200]}",
                                           {"source": role})
@@ -774,7 +799,9 @@ def create_app(
                     devices = await asyncio.wait_for(availability(), 3) if mode == "assistant" else None
                 except asyncio.TimeoutError:
                     devices = None
-                config = live_config(settings, memory.context(), mode=mode, interview=interview, devices=devices)
+                memory_seen[id(ws)] = time.time()
+                config = live_config(settings, await memory.session_context(), mode=mode, interview=interview,
+                                     devices=devices)
                 await hub.send(ws, "live.ready", {**token, "config": config}, id_)
                 await hub.dashboard_event("connect", f"Voice session token issued to the {role}")
 
@@ -849,6 +876,13 @@ def create_app(
         elif type_ == "memory.list" and role == "phone":  # the app's Memory tab
             await hub.send(ws, "memory", {"facts": [{"id": f["id"], "text": f["text"]} for f in memory.facts()],
                                           "summary": memory.summary()}, id_)
+
+        elif type_ == "memory.update" and role == "phone":  # a memory corrected in the app
+            text = str(payload.get("text") or "").strip()
+            ok = bool(text) and memory.update_fact(int(payload.get("id") or 0), text)
+            if ok:
+                await hub.dashboard_event("memory", f"A memory was edited from the phone: {text}")
+            await hub.send(ws, "memory.updated", {"ok": ok}, id_)
 
         elif type_ == "memory.forget" and role == "phone":
             gone = memory.forget(int(payload.get("id") or 0))
@@ -955,6 +989,7 @@ def create_app(
         finally:
             hub.remove(role, ws)
             tv_phones.pop(id(ws), None)
+            memory_seen.pop(id(ws), None)
             presence.pop(id(ws), None)
             if role == "phone" and not hub.counts().get("phone"):
                 laptop.stop()  # nobody left to hear the answers

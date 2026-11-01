@@ -188,3 +188,165 @@ def test_parse_duckduckgo_results():
 
 def test_html_to_text_drops_scripts_and_tags():
     assert html_to_text("<script>x()</script><p>Lap&nbsp;30</p><p>Leader: VER</p>") == "Lap\xa030\nLeader: VER"
+
+
+# ---------- Hindi, local time, time labels, topics, expiry, forget, search by meaning ----------
+
+def test_hindi_in_devanagari_is_searchable(memory):
+    memory.remember("मेरी गाड़ी लेवल 3 पर खड़ी है", "place", 5)
+    found = memory.search("मेरी गाड़ी कहाँ है?")
+    assert [f["text"] for f in found["facts"]] == ["मेरी गाड़ी लेवल 3 पर खड़ी है"]
+    # The same wording with different punctuation is the same memory, in Hindi too.
+    memory.remember("मेरी गाड़ी लेवल 3 पर खड़ी है।", "place", 5)
+    assert len(memory.facts()) == 1
+
+
+def test_context_and_compaction_use_the_users_time_zone(settings, memory):
+    from ronie_brain.config import local_now
+
+    settings.update({"timezone": "Pacific/Kiritimati"})  # UTC+14: a different day from the server for 14 hours
+    now = local_now(settings)
+    assert f"Current date and time: {now.strftime('%A %d %B %Y').replace(' 0', ' ')}" in memory.context()
+    assert now.date().isoformat() in Compactor(memory, settings, None).today()
+
+
+def test_old_turns_carry_when_they_were_said(memory):
+    memory.add_turn("user", "I'm at the airport.", "voice")
+    memory.add_turn("ronie", "Safe flight!", "voice")
+    memory.db.execute("UPDATE turns SET ts = ts - 2 * 86400")  # two days ago
+    memory.add_turn("user", "chai ya coffee?", "voice")
+    ctx = memory.context()
+    labels = [line for line in ctx.splitlines() if line.startswith("[")]
+    assert len(labels) == 2 and labels[1].startswith("[today")  # one before the old pair, one after the pause
+    assert "may not be true now" in ctx
+    assert ctx.index(labels[0]) < ctx.index("I'm at the airport.") < ctx.index(labels[1]) < ctx.index("chai ya coffee?")
+
+
+def test_a_new_fact_on_the_same_topic_replaces_the_old_one(memory):
+    memory.remember("The user's car is parked on level 3, pillar B12.", "place", 5, topic="Parking spot")
+    memory.remember("Mom's birthday is on 12 March.", "person", 4)
+    memory.remember("The user's car is parked on level 2, pillar A4.", "place", 5, topic="parking spot")
+    assert sorted(f["text"] for f in memory.facts()) == [
+        "Mom's birthday is on 12 March.", "The user's car is parked on level 2, pillar A4."]
+
+
+def test_expired_memories_are_dropped(settings, memory):
+    from datetime import timedelta
+
+    from ronie_brain.config import local_now
+
+    today = local_now(settings).date()
+    memory.remember("The user parked on level 3.", "place", 5, expires=(today - timedelta(days=1)).isoformat())
+    memory.remember("The user flies to Goa on Friday.", "plan", 4, expires=today.isoformat())
+    memory.remember("The user's sister is Priya.", "person", 4, expires="next week")  # not a date: kept for good
+    ctx = memory.context()
+    assert "level 3" not in ctx and "Goa" in ctx
+    assert sorted(f["text"] for f in memory.facts()) == ["The user flies to Goa on Friday.", "The user's sister is Priya."]
+    assert next(f for f in memory.facts() if "Priya" in f["text"])["expires"] == ""
+
+
+def test_recent_facts_make_the_prompt_even_when_many_are_more_important(settings, memory):
+    settings.update({"memory_max_facts": 3})
+    for i in range(5):
+        memory.remember(f"Important old fact {i}.", "fact", 5)
+    memory.db.execute("UPDATE facts SET updated = updated - 30 * 86400")
+    memory.remember("The user started a new job at a bakery.", "fact", 2)
+    assert "new job at a bakery" in memory.context()
+
+
+def test_session_context_picks_facts_about_what_was_said_lately(settings, memory):
+    settings.update({"memory_max_facts": 2})
+    memory.remember("Important fact one.", "fact", 5)
+    memory.remember("Important fact two.", "fact", 5)
+    memory.remember("The user's dog is called Bruno.", "person", 1)
+    memory.db.execute("UPDATE facts SET updated = updated - 30 * 86400")
+    memory.add_turn("user", "Bruno ko walk pe le jana hai", "voice")
+    assert "Bruno" in memory.context()  # the words of the recent chat count as the question
+
+
+async def test_forget_asks_which_one_when_several_fit(settings, budget, memory):
+    tools = Tools(Router(settings, {}, budget), memory, Web(FakeKeys()))
+    memory.remember("Mom's birthday is on 12 March.", "person", 4)
+    memory.remember("Sister Priya's birthday is on 4 May.", "person", 4)
+    asked = await tools.run("forget", {"query": "birthday"})
+    assert asked["forgotten"] == 0 and len(asked["which"]) == 2 and len(memory.facts()) == 2
+    # All the words must fit first: "mom birthday" is only mom's, even though "birthday" fits both.
+    assert (await tools.run("forget", {"query": "mom birthday"}))["text"] == "Mom's birthday is on 12 March."
+    sister = memory.facts()[0]
+    assert (await tools.run("forget", {"query": "birthday", "id": str(sister["id"])}))["forgotten"] == 1
+    assert memory.facts() == []
+    assert (await tools.run("forget", {"query": "birthday"}))["forgotten"] == 0
+
+
+async def test_forget_checks_first_when_only_the_meaning_fits(settings, budget, memory):
+    memory.embedder = fake_embedder()
+    memory.remember("The user's car is parked on level 3.", "place", 5)
+    tools = Tools(Router(settings, {}, budget), memory, Web(FakeKeys()))
+    asked = await tools.run("forget", {"query": "gaadi wali baat"})
+    assert asked["forgotten"] == 0 and [w["text"] for w in asked["which"]] == ["The user's car is parked on level 3."]
+    assert len(memory.facts()) == 1
+
+
+def fake_embedder(calls=None):
+    """Vectors by meaning, for a handful of ideas: a Hinglish question lands next to the English memory."""
+    ideas = {"car": ("car", "gaadi", "गाड़ी", "parked"), "food": ("coffee", "chai", "roast"), "pet": ("dog", "kutta")}
+
+    async def embed(texts, task):
+        if calls is not None:
+            calls.append((len(texts), task))
+        return [[1.0 if any(w in t.lower() for w in words) else 0.0 for words in ideas.values()] + [0.1] for t in texts]
+
+    return embed
+
+
+async def test_recall_finds_an_english_memory_from_a_hinglish_question(settings, budget, memory):
+    calls = []
+    memory.embedder = fake_embedder(calls)
+    memory.remember("The user's car is parked on level 3, pillar B12.", "place", 5)
+    memory.remember("The user prefers dark roast coffee.", "preference", 3)
+    tools = Tools(Router(settings, {}, budget), memory, Web(FakeKeys()))
+    recall = await tools.run("recall", {"query": "meri gaadi kahan hai"})
+    assert recall["facts"] == ["The user's car is parked on level 3, pillar B12."]
+    assert calls == [(2, "RETRIEVAL_DOCUMENT"), (1, "RETRIEVAL_QUERY")]
+    await tools.run("recall", {"query": "chai"})
+    assert calls[2:] == [(1, "RETRIEVAL_QUERY")]  # saved memories are embedded once, not on every search
+
+
+async def test_search_by_meaning_steps_aside_when_it_fails(memory):
+    async def broken(texts, task):
+        raise OSError("no network")
+
+    memory.embedder = broken
+    memory.remember("The user's car is parked on level 3.", "place", 5)
+    assert [f["text"] for f in (await memory.find("car parked"))["facts"]] == ["The user's car is parked on level 3."]
+    assert memory._embed_off_until > 0  # words only for a while, so recall stays quick
+
+
+async def test_facts_carry_topic_and_expiry_from_the_fact_check(settings, memory):
+    settings.update({"memory_fact_delay": 0})
+
+    async def fake_llm(prompt):
+        assert "topic" in prompt and "expires" in prompt and "in English" in prompt
+        return json.dumps({"new_facts": [{"text": "The user's car is parked on level 2.", "kind": "place",
+                                          "importance": 4, "topic": "parking spot", "expires": "2099-01-01"}]})
+
+    memory.remember("The user's car is parked on level 3.", "place", 4, topic="parking spot")
+    memory.add_turn("user", "Gaadi level 2 pe lagayi hai.", "voice")
+    await Compactor(memory, settings, fake_llm).extract_facts()
+    [fact] = memory.facts()
+    assert fact["text"] == "The user's car is parked on level 2." and fact["expires"] == "2099-01-01"
+
+
+def test_an_old_database_gets_the_new_columns(settings, home):
+    import sqlite3
+
+    path = home / "old.db"
+    db = sqlite3.connect(path)
+    db.execute("CREATE TABLE facts (id INTEGER PRIMARY KEY, ts REAL NOT NULL, updated REAL NOT NULL, text TEXT NOT NULL, "
+               "kind TEXT NOT NULL DEFAULT 'note', importance INTEGER NOT NULL DEFAULT 3, source TEXT NOT NULL DEFAULT '')")
+    db.execute("INSERT INTO facts (ts, updated, text) VALUES (1, 1, 'Old fact')")
+    db.commit()
+    db.close()
+    m = Memory(settings, path)
+    assert m.facts()[0]["topic"] == "" and m.facts()[0]["expires"] == ""
+    m.remember("New fact", topic="x", expires="2099-01-01")

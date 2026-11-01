@@ -9,8 +9,10 @@ from __future__ import annotations
 import copy
 import json
 import os
+from datetime import datetime, timedelta, timezone, tzinfo
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 KEYRING_SERVICE = "ronie"
 
@@ -112,6 +114,12 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     "memory_keep_turns": 8,  # turns kept word for word after compaction
     "memory_recent_turns": 12,  # recent turns included in every prompt
     "memory_max_facts": 30,  # long-term facts included in every prompt
+    "memory_fresh_days": 3,  # facts saved or changed this recently always go into the prompt
+    "memory_turn_gap_minutes": 30,  # recent turns older than this, or after a pause this long, get a time label
+    # Searching memory by meaning (so "meri gaadi kahan hai" finds "The user's car is parked on level 3") uses
+    # Gemini's free embeddings when a Gemini key is set; without one, search falls back to matching words.
+    "memory_embed_model": "gemini-embedding-001",
+    "memory_semantic_min": 0.6,  # how close in meaning a memory must be to count as a match (0 to 1)
     # Model chains for the other free providers, by request type (see task_chain).
     # Groq's model list changes; check https://console.groq.com/docs/models.
     "model_chains": {
@@ -231,3 +239,15 @@ class Keys:
             keyring.delete_password(KEYRING_SERVICE, provider)
         except keyring.errors.PasswordDeleteError:
             pass
+
+
+def user_tz(settings: "Settings") -> tzinfo:
+    """The user's time zone. The cloud server runs on UTC, so anything said to the user uses this, never the server clock."""
+    try:
+        return ZoneInfo(settings["timezone"])
+    except Exception:  # no time zone database (Windows without tzdata): India time
+        return timezone(timedelta(hours=5, minutes=30))
+
+
+def local_now(settings: "Settings") -> datetime:
+    return datetime.now(user_tz(settings))

@@ -1060,6 +1060,8 @@ fun MemoryScreen(brain: BrainClient) {
     var factInput by remember { mutableStateOf("") }
     var filter by remember { mutableStateOf("") }
     var statusMessage by remember { mutableStateOf<String?>(null) }
+    var editingId by remember { mutableStateOf<Int?>(null) } // the memory being corrected, if any
+    var editText by remember { mutableStateOf("") }
     val ink = Ronie.ink
 
     suspend fun load() {
@@ -1135,11 +1137,40 @@ fun MemoryScreen(brain: BrainClient) {
             GlowCard(Modifier.fillMaxWidth(), padding = 6.dp) {
                 shown.forEachIndexed { i, fact ->
                     if (i > 0) HorizontalDivider(color = ink.line, modifier = Modifier.padding(horizontal = 14.dp))
+                    if (editingId == fact.id) {
+                        // Correct a memory in place: tap Save, or Cancel to leave it as it was.
+                        Column(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp)) {
+                            RField(editText, { editText = it }, fact.text, singleLine = false)
+                            Spacer(Modifier.height(8.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                GhostPill("Cancel", { editingId = null }, modifier = Modifier.weight(1f))
+                                GhostPill("Save", {
+                                    val text = editText.trim()
+                                    scope.launch {
+                                        statusMessage = try {
+                                            val r = brain.request("memory.update", buildJsonObject { put("id", fact.id); put("text", text) })
+                                            if (r["ok"]?.jsonPrimitive?.booleanOrNull == true) {
+                                                editingId = null
+                                                load()
+                                                "Updated."
+                                            } else "Couldn't update it. It may have just been removed."
+                                        } catch (e: Exception) {
+                                            "Couldn't update: ${e.message}"
+                                        }
+                                    }
+                                }, modifier = Modifier.weight(1f), enabled = editText.isNotBlank() && editText.trim() != fact.text && state == BrainState.Connected)
+                            }
+                        }
+                        return@forEachIndexed
+                    }
                     Row(
                         Modifier.fillMaxWidth().padding(start = 14.dp, end = 2.dp, top = 2.dp, bottom = 2.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(fact.text, style = MaterialTheme.typography.bodyMedium, color = ink.onCard, modifier = Modifier.weight(1f).padding(vertical = 10.dp))
+                        IconButton(onClick = { editingId = fact.id; editText = fact.text }) {
+                            Icon(Icons.Outlined.Edit, contentDescription = "Edit this", tint = ink.onCard3, modifier = Modifier.size(18.dp))
+                        }
                         IconButton(onClick = {
                             scope.launch {
                                 statusMessage = try {

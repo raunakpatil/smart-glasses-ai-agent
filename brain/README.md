@@ -50,7 +50,14 @@ Ronie's memory lives in the brain (`~/.ronie/memory.db`), not in any model, so s
 - **Summary:** a running summary of older conversations.
 - **Recent conversation:** the latest turns, word for word.
 
-Every text request and every new Gemini Live session gets the same memory block (plus today's date). When the recent conversation passes `memory_compact_tokens`, a background job folds the oldest turns into the summary and saves new facts, keeping the last `memory_keep_turns` turns word for word. Mission control shows the facts and summary, and lets you add, forget or compact.
+Every text request and every new Gemini Live session gets the same memory block (plus the date and time in the user's `timezone`, never the server's clock). When the recent conversation passes `memory_compact_tokens`, a background job folds the oldest turns into the summary and saves new facts, keeping the last `memory_keep_turns` turns word for word. Mission control shows the facts and summary, and lets you add, edit, forget or compact; the app's Memory tab can add, edit and forget too.
+
+- **Which facts go in:** the ones that fit the question (or, as a voice session starts, what the user talked about lately), then anything saved in the last `memory_fresh_days` days, then the most important, up to `memory_max_facts`.
+- **Time labels:** recent turns from earlier, or after a pause of `memory_turn_gap_minutes`, carry when they were said, so yesterday's "I'm at the airport" isn't taken as true now.
+- **Topics and expiry:** a fact can carry a topic ("parking spot"): a new fact with the same topic replaces the old one at once. Plans, reminders and where something is right now carry the last date they matter, and are dropped after it.
+- **Search:** recall and forget match words in any script, Hindi in Devanagari included. With a Gemini key they also match by meaning, using free Gemini embeddings (`memory_embed_model`), so a Hinglish question finds an English memory. Without a key, or when embeddings fail, search falls back to words.
+- **Forget:** when more than one memory fits, or the match is only a guess, nothing is deleted: Ronie asks which one.
+- **Mid-session updates:** facts learned while a voice session is running (the background fact check, another device) ride along with that session's next tool result as `memory_update`.
 
 ## Internet
 

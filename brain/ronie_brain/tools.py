@@ -47,22 +47,36 @@ class Tools:
         text = str(args.get("text", "")).strip()
         if not text:
             return {"error": "nothing to remember"}
-        self.memory.remember(text, str(args.get("kind", "note")), 5, source="user asked")
+        self.memory.remember(text, str(args.get("kind", "note")), 5, source="user asked",
+                             topic=str(args.get("topic") or ""), expires=str(args.get("expires") or ""))
         return {"saved": True}
 
     async def _recall(self, args: dict) -> dict:
-        found = self.memory.search(str(args.get("query", "")))
+        found = await self.memory.find(str(args.get("query", "")))
         return {
             "facts": [f["text"] for f in found["facts"]],
             "past_conversation": [f"{'User' if t['role'] == 'user' else 'Ronie'}: {t['text']}" for t in found["turns"]],
         }
 
     async def _forget(self, args: dict) -> dict:
-        found = self.memory.search(str(args.get("query", "")), limit=3)["facts"]
+        """Forgets one memory. When several fit, nothing is deleted: Ronie asks which one, then calls again with its
+        id. Deleting the best guess once removed the wrong birthday."""
+        try:
+            fact_id = int(str(args.get("id") or "0").strip() or 0)
+        except ValueError:
+            fact_id = 0
+        if fact_id and (fact := self.memory.fact(fact_id)) is not None:
+            self.memory.forget(fact_id)
+            return {"forgotten": 1, "text": fact["text"]}
+        found, sure = await self.memory.candidates_to_forget(str(args.get("query", "")))
         if not found:
-            return {"forgotten": 0}
-        self.memory.forget(found[0]["id"])
-        return {"forgotten": 1, "text": found[0]["text"]}
+            return {"forgotten": 0, "note": "Nothing like that is saved."}
+        if len(found) == 1 and sure:
+            self.memory.forget(found[0]["id"])
+            return {"forgotten": 1, "text": found[0]["text"]}
+        return {"forgotten": 0, "which": [{"id": str(f["id"]), "text": f["text"]} for f in found],
+                "note": "Not sure which memory this is. Ask the user (say the options briefly), then call forget "
+                        "again with the chosen one's id."}
 
     async def _interview_cue(self, args: dict) -> dict:
         if self.interview is None:

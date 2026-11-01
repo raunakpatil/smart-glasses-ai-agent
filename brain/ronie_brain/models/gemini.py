@@ -16,10 +16,22 @@ import httpx
 
 from ..config import Keys, Settings, data_dir
 from .base import LLMRequest, LLMResult, Provider, ProviderError
-from .providers_common import _messages, retry_after_seconds, shared_client
+from .providers_common import _messages, raise_for_status, retry_after_seconds, shared_client
 
 URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 UNAVAILABLE_WAIT = 24 * 3600  # a model Google doesn't serve (404) is skipped for a day
+EMBED_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:batchEmbedContents"
+EMBED_SIZE = 256  # small vectors are plenty for a few hundred memories, and quick to compare
+
+
+async def gemini_embed(key: str, model: str, texts: list[str], task: str) -> list[list[float]]:
+    """Vectors for texts (free tier), so memory can be searched by meaning across Hindi, English and Hinglish.
+    task: RETRIEVAL_DOCUMENT for saved memories, RETRIEVAL_QUERY for a question."""
+    body = {"requests": [{"model": f"models/{model}", "content": {"parts": [{"text": t}]}, "taskType": task,
+                          "outputDimensionality": EMBED_SIZE} for t in texts]}
+    r = await shared_client().post(EMBED_URL.format(model=model), json=body, headers={"x-goog-api-key": key})
+    raise_for_status("gemini embeddings", r)
+    return [e["values"] for e in r.json()["embeddings"]]
 
 
 def pacific_day() -> str:

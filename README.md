@@ -134,6 +134,8 @@ One memory, shared by every model and every conversation.
 
 - **It remembers what matters.** Say "remember…" and it's saved. It also picks up the details a friend would: people, places, plans, tastes.
 - **Nothing gets lost.** Old conversations fold into a running summary. Facts that change are updated; facts that stop being true are dropped.
+- **Ask it your way.** Hindi, English or Hinglish: "meri gaadi kahan khadi hai?" finds the parking spot you saved in English.
+- **The newest is the truth.** Park again and the old spot is replaced. Plans and reminders clear themselves once their day has passed.
 - **A picture of you takes shape.** Weeks in, it knows your routines. A year in, it knows you.
 - **Every model starts from it.** Switch from Gemini to Claude and you never repeat yourself.
 - **You're in control.** See, edit or delete any memory from the app.

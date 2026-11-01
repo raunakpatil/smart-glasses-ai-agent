@@ -48,9 +48,10 @@ form { display: grid; gap: 8px; }
 label { font-size: 13px; color: var(--muted); }
 .note { font-size: 12px; color: var(--muted); margin: 0; }
 .facts { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 4px; max-height: 260px; overflow-y: auto; }
-.facts li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--line); }
+.facts li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: start; font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--line); }
 .facts .kind { font: 11px var(--mono); color: var(--muted); margin-right: 6px; }
 .facts button { background: transparent; color: var(--bad); border: 1px solid currentColor; padding: 1px 7px; font-weight: 500; }
+.facts button.edit { color: var(--muted); }
 .row-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .row-buttons .secondary { margin-top: 0; }
 button.secondary { background: transparent; color: var(--accent); border: 1px solid currentColor; margin-top: 8px; }
@@ -485,10 +486,20 @@ function renderMemory(m) {
     const text = document.createElement("span");
     const kind = document.createElement("span"); kind.className = "kind"; kind.textContent = f.kind;
     text.append(kind, f.text);
+    if (f.expires) {
+      const until = document.createElement("span"); until.className = "kind"; until.textContent = "until " + f.expires;
+      text.append(" ", until);
+    }
+    const edit = document.createElement("button"); edit.type = "button"; edit.className = "edit"; edit.textContent = "Edit";
+    edit.setAttribute("aria-label", "Edit: " + f.text);
+    edit.onclick = () => {
+      const changed = prompt("Correct this memory", f.text);
+      if (changed && changed.trim() && changed.trim() !== f.text) memoryCall("/api/memory/facts/" + f.id, "PUT", { text: changed.trim() });
+    };
     const del = document.createElement("button"); del.type = "button"; del.textContent = "Forget";
     del.setAttribute("aria-label", "Forget: " + f.text);
     del.onclick = () => memoryCall("/api/memory/facts/" + f.id, "DELETE");
-    li.append(text, del);
+    li.append(text, edit, del);
     list.append(li);
   }
   document.getElementById("mem-summary").textContent = m.summary || "Nothing summarized yet.";

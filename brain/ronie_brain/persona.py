@@ -2,12 +2,11 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime, timedelta, timezone
-from zoneinfo import ZoneInfo
+from datetime import datetime
 
 from .devices import LAPTOP_ACTIONS, TV_ACTIONS
 
-from .config import Settings
+from .config import Settings, local_now  # noqa: F401  (local_now is imported from here elsewhere)
 from .voices import VOICES
 
 # Tasks whose answers are spoken in the ear. Coding answers also go to the laptop overlay, so code is allowed there.
@@ -82,6 +81,8 @@ LIVE_TOOLS = (
     "When the user asks you to remember something, call remember with a clear, self-contained sentence. "
     "If the user refers to something from the past that isn't in your memory below, call recall before saying you don't know. "
     "If the user asks you to forget something, call forget. "
+    "A tool result may include memory_update: things learned about the user since this conversation started. "
+    "Treat them as part of your memory, and don't mention them unless they matter to what the user asked. "
     "You cannot see anything unless you call look, which takes a photo with the user's glasses. Whenever the user asks "
     "about something in front of them or shows you something (what is this, yeh kya hai, read this, what brand, how "
     "much), call look for a fresh photo, every time, even if you looked a moment ago or they told you what it is: "
@@ -208,12 +209,30 @@ LIVE_FUNCTIONS = [
                        "ki battery kitni hai', 'how much charge').",
         "parameters": {"type": "OBJECT", "properties": {}},
     },
-    _fn("remember", "Save something the user wants Ronie to remember long-term.",
-        text="What to remember, as one clear sentence, e.g. 'The user's car is parked in lot B, level 3.'"),
+    {
+        "name": "remember",
+        "description": "Save something the user wants Ronie to remember long-term.",
+        "parameters": {"type": "OBJECT", "properties": {
+            "text": {"type": "STRING", "description": "What to remember, as one clear sentence in English, even when "
+                     "the user spoke Hindi or Hinglish, e.g. 'The user's car is parked in lot B, level 3.'"},
+            "topic": {"type": "STRING", "description": "Only when this replaces an older memory of the same thing: a "
+                      "short label, e.g. 'parking spot', 'current city', 'wifi password location'."},
+            "expires": {"type": "STRING", "description": "Only for something that stops mattering: the last date it "
+                        "matters, YYYY-MM-DD (a parking spot: today; a trip: its last day)."},
+        }, "required": ["text"]},
+    },
     _fn("recall", "Search Ronie's long-term memory and past conversations.",
-        query="Words to search for, e.g. 'car parking' or 'mom birthday'."),
-    _fn("forget", "Delete something from Ronie's long-term memory when the user asks.",
-        query="Words describing what to forget."),
+        query="What to search for, in English keywords even when the user spoke Hindi or Hinglish (memories are "
+              "saved in English), e.g. 'car parking' or 'mom birthday'."),
+    {
+        "name": "forget",
+        "description": "Delete something from Ronie's long-term memory when the user asks. If several memories fit, "
+                       "it returns them: ask the user which one, then call forget again with its id.",
+        "parameters": {"type": "OBJECT", "properties": {
+            "query": {"type": "STRING", "description": "What to forget, in English keywords, e.g. 'mom birthday'."},
+            "id": {"type": "STRING", "description": "Only on the second call: the id of the memory the user chose."},
+        }, "required": ["query"]},
+    },
     _fn("research_web", "Search the internet, read the top pages, and return a detailed, current analysis.",
         question="The user's question in full.",
         query="A good web search query for it, including the year or 'live' / 'today' when it matters."),
@@ -368,11 +387,6 @@ def identity(settings: Settings, now: datetime | None = None) -> str:
             f"({settings['timezone']}).")
 
 
-def local_now(settings: Settings) -> datetime:
-    try:
-        return datetime.now(ZoneInfo(settings["timezone"]))
-    except Exception:  # no time zone database (Windows without tzdata): India time
-        return datetime.now(timezone(timedelta(hours=5, minutes=30)))
 
 
 SHOW_FUNCTION = _fn(

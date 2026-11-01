@@ -31,7 +31,7 @@ https://github.com/user-attachments/assets/24abf23e-2b7b-436d-a97f-da1470be848b
 
 ## Things you didn't know glasses could do.
 
-<p align="center"><img src="docs/media/things.gif" alt="Just say it: ten things Ronie does. Every screen at once, no remote needed, chess and poker, interview mode, reads the menu, names the car, remembers for you, the live web, interrupt any time, and Hindi, English or both." width="100%"></p>
+<p align="center"><img src="docs/media/things.gif" alt="Just say it: ten things Ronie does. All your screens, no remote needed, chess and poker, interview mode, reads the menu, names the car, remembers for you, the live web, interrupt any time, and Hindi, English or both." width="100%"></p>
 
 <details>
 <summary>Read all ten</summary>

@@ -21,7 +21,7 @@
 
 https://github.com/user-attachments/assets/90b6202b-6237-4d71-889a-12c43a5b61bb
 
-<p align="center"><sub>The launch film · 1:38 · sound on</sub></p>
+<p align="center"><sub>The launch film · 1:16 · sound on</sub></p>
 
 <br>
 

@@ -188,10 +188,12 @@ class VoiceController(private val context: Context, private val brain: BrainClie
                 }
                 return@Microphone
             }
-            // Activity = Ronie talking, or anything the user says (from Gemini's transcript, so a soft voice counts and
-            // room noise doesn't). Normal pauses don't end the conversation.
-            if (speaker.busy() || replying) lastActivityAt = now
-            if (needsName && !speaker.busy() && !replying) {
+            // Activity = Ronie talking or working on a tool (a web search can take 20 s), or anything the user says
+            // (from Gemini's live transcript, so a soft voice counts and room noise doesn't). Normal pauses don't end
+            // the conversation, and Ronie never asks "Aur kuch?" or falls asleep while the user waits for an answer.
+            val busy = speaker.busy() || replying || session?.toolRunning == true
+            if (busy) lastActivityAt = now
+            if (needsName && !busy) {
                 val quietFor = now - lastActivityAt
                 when {
                     // The user said bye and Ronie has finished its goodbye. (Not turnDone: switching the glasses back
@@ -267,6 +269,11 @@ class VoiceController(private val context: Context, private val brain: BrainClie
                         override fun onTurnComplete() {
                             turnDone = true
                             replying = false
+                        }
+                        override fun onUserSpeaking() {
+                            // Counted while they talk, not only when their turn ends: a long question isn't silence.
+                            lastActivityAt = SystemClock.elapsedRealtime()
+                            nudgedAt = 0L
                         }
                         override fun onTranscript(who: String, text: String) {
                             _lines.value = (_lines.value + Line(who, text)).takeLast(20)

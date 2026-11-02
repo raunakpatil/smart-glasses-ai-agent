@@ -55,6 +55,8 @@ class LiveSession(
         fun onTranscript(who: String, text: String)
         /** Ronie's turn is over (finished or interrupted); everything it will say is already queued. */
         fun onTurnComplete() {}
+        /** The user is saying something right now (live transcript, before their turn ends). */
+        fun onUserSpeaking() {}
     }
 
     private var ws: WebSocket? = null
@@ -67,6 +69,10 @@ class LiveSession(
     /** The user said "stop": the rest of Ronie's current answer isn't played. */
     @Volatile private var muted = false
     private val overTalk = StringBuilder() // what the user said while Ronie was talking
+    private val toolsInFlight = java.util.concurrent.atomic.AtomicInteger(0)
+
+    /** A tool is still running (a web search, the brain, a photo): the user is waiting for an answer, not quiet. */
+    val toolRunning: Boolean get() = toolsInFlight.get() > 0
 
     fun open(http: OkHttpClient) {
         val request = Request.Builder().url("$url?access_token=$token").build()
@@ -216,6 +222,7 @@ class LiveSession(
         msg["serverContent"]?.jsonObject?.let { content ->
             content["inputTranscription"]?.jsonObject?.get("text")?.jsonPrimitive?.content?.let {
                 heard.append(it)
+                listener.onUserSpeaking()
                 // The user said stop while Ronie talks: quiet now, not when the server notices. The rest of this
                 // answer is dropped; the user's words still go to the model, which listens for what comes next.
                 // Only words said over Ronie count, so a "bas" in the question doesn't cut the answer off.
@@ -250,7 +257,10 @@ class LiveSession(
             }
         }
         msg["toolCall"]?.jsonObject?.get("functionCalls")?.jsonArray?.forEach { call ->
-            scope.launch { runTool(webSocket, call.jsonObject) }
+            toolsInFlight.incrementAndGet() // counted before the launch, so there's no gap the app sees as quiet
+            scope.launch {
+                try { runTool(webSocket, call.jsonObject) } finally { toolsInFlight.decrementAndGet() }
+            }
         }
     }
 

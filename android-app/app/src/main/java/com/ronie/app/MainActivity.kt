@@ -459,7 +459,7 @@ fun AppHeader(brainState: BrainState, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(buildAnnotatedString {
-            append("Ronie")
+            append("Ronie Go")
             withStyle(SpanStyle(color = Ronie.ink.live)) { append(".") }
         }, style = MaterialTheme.typography.headlineLarge, color = Ronie.ink.onCard)
         when (brainState) {

@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/media/banner.gif" alt="Ronie: the actually smart AI agent for your glasses. Works with Gemini, Claude, ChatGPT and DeepSeek." width="100%"></p>
+<p align="center"><img src="docs/media/banner.gif" alt="Ronie Go: the actually smart AI agent for your glasses. Works with Gemini, Claude, ChatGPT and DeepSeek." width="100%"></p>
 
 <p align="center">
   <a href="https://raunakpatil.com/"><img src="https://img.shields.io/badge/Website-7f77dd?style=for-the-badge&logo=globe&logoColor=white" alt="Website"></a>
@@ -13,7 +13,7 @@
 
 <p align="center"><b>Your Ray-Ban Metas. Finally smart.</b></p>
 
-<p align="center">An open-source, hands-free AI agent for Ray-Ban Meta glasses.<br>Say "Ronie" and just talk. It sees what you see, browses the web for live answers,<br>runs your TV and laptop, and remembers your life. Free to run. No subscription.</p>
+<p align="center"><b>Ronie Go</b> is an open-source, hands-free AI agent for Ray-Ban Meta glasses.<br>Say "Ronie" and just talk. It sees what you see, browses the web for live answers,<br>runs your TV and laptop, and remembers your life. Free to run. No subscription.</p>
 
 <p align="center"><sub>Not affiliated with, endorsed by, or sponsored by Meta Platforms or Ray-Ban (EssilorLuxottica). "Ray-Ban Meta" only names the glasses this works with.</sub></p>
 
@@ -89,11 +89,11 @@ Talk the way you talk. More languages are on the way.
 
 
 
-## Ronie App
+## Ronie Go app
 
 
 <p align="center">
-  <img src="docs/media/app-tour.gif" alt="A tour of the Ronie Android app: Home with a greeting, a rotating 3D brain showing what Ronie remembers and a live voice wave; Modes; Memory; Devices; and the AI models." width="150">
+  <img src="docs/media/app-tour.gif" alt="A tour of the Ronie Go Android app: Home with a greeting, a rotating 3D brain showing what Ronie remembers and a live voice wave; Modes; Memory; Devices; and the AI models." width="150">
   <img src="docs/media/app-modes.jpg" alt="Modes: Assistant, Interview mode, Interview practice, Coding, Translator, Game, Focus, Cooking" width="150">
   <img src="docs/media/app-memory.jpg" alt="Memory: everything Ronie knows about you, editable" width="150">
   <img src="docs/media/app-devices.jpg" alt="Devices: start with your glasses, the glasses camera, TV, laptop and the brain server" width="150">

@@ -1,6 +1,6 @@
 # Set up your own smart glasses AI agent
 
-This guide sets up everything with your own free accounts: the brain server, the phone app, and optionally your TV and laptop. It takes about an hour the first time.
+This guide sets up **Ronie Go** with your own free accounts: the brain server, the phone app, and optionally your TV and laptop. It takes about an hour the first time.
 
 ## What you need
 

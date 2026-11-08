@@ -153,7 +153,7 @@ private fun Welcome(onNext: () -> Unit) {
         }
         Spacer(Modifier.height(16.dp))
         Text(buildAnnotatedString {
-            append("Ronie")
+            append("Ronie Go")
             withStyle(SpanStyle(color = Ronie.ink.live)) { append(".") }
         }, style = MaterialTheme.typography.displayLarge, color = Ronie.ink.onCard)
         Spacer(Modifier.height(8.dp))

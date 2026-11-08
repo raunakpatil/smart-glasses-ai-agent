@@ -19,8 +19,8 @@ android {
         applicationId = "com.ronie.app"
         minSdk = 34 // the Meta DAT Android SDK needs Android 14+
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.1.1"
+        versionCode = 3
+        versionName = "0.1.2"
         // Meta Wearables SDK app credentials. "0" works while Developer Mode is on in the Meta AI app.
         manifestPlaceholders["mwdat_application_id"] = "0"
         manifestPlaceholders["mwdat_client_token"] = "0"

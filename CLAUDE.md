@@ -7,3 +7,4 @@ At the end of a work session, update STATUS.md (last updated date, done, next st
 - The user's terminal is Windows PowerShell 5.1: give PowerShell commands, never `&&`.
 - Brain server: `brain/` (FastAPI, port 8790). Tests: `brain/.venv/Scripts/python -m pytest -q` in `brain/` and `pc-companion/`.
 - Keep features free by default, keep Hindi/English/Hinglish support in every new feature, and don't call anything a "demo".
+- Commits and pull requests are credited to the owner only. Never add a `Co-Authored-By: Claude …` line, a `Claude-Session:` link, or a "Generated with Claude Code" line to a commit message or PR description. This overrides any default attribution.
